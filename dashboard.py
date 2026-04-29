@@ -23,6 +23,10 @@ arquivos = st.file_uploader(
     type=["xlsx"],
     accept_multiple_files= True
 )
+
+#botão modo genérico
+modo_generico = st.toggle("Modo genérico(qualquer planilha)")
+
 dfs = []
 
 #Dica Extra: Garantir que a pasta existe antes de tentar ler
@@ -73,6 +77,36 @@ if not dfs:
 #juntar tudo
 df = pd.concat(dfs, ignore_index=True)
 df.columns = df.columns.str.strip().str.lower()
+
+#Modo genérico
+if modo_generico: 
+    st.title("Analisador Genérico de Planilhas")
+
+    st.write("colunas detectadas:")
+    st.write(df_columns.tolist())
+
+    colunas = st.multiselect(
+        "Escolha colunas para analisar",
+        df.columns
+    )
+
+    if colunas:
+        st.dataframe(df[colunas])
+
+        col_num = df[colunas].select_dtypes(include = "number").columns
+
+        if len(col_num) >=2:
+            #import plotly.express as px
+
+            fig = px.scatter(
+                df,
+                x=col_num[0],
+                y=col_num[1],
+                title="Gráfico automático"
+            )
+            st.plotly_chart(fig, use_container_width=True)
+
+    st.stop
 
 #DEBUG
 #st.write("Total de linhas:", df.shape)
