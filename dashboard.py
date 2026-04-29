@@ -127,7 +127,7 @@ if modo_generico:
                 .str.replace(",", "", regex=False) #remove decimal
 
             )
-            df_filtro[col] = pd.to_numeric(df_filtro[col], errors="ignore")
+            df_filtro[col] = pd.to_numeric(df_filtro[col], errors="coerce")
 
     colunas_numericas = df_filtro.select_dtypes(include="number").columns
     colunas_texto = df_filtro.select_dtypes(exclude="number").columns
