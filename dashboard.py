@@ -120,6 +120,18 @@ if modo_generico:
         if df_filtro[col].dtype == "object":
             df_filtro[col] = pd.to_numeric(df_filtro[col], errors="ignore")
 
+    for col in df_filtro.columns:
+        if df_filtro[col].dtype == "object":
+            df_filtro[col] = (
+                df_filtro[col]
+                .astype(str)
+                 .str.replace("R$", "", regex=False)
+                .str.replace(".", "", regex=False)
+                 .str.replace(",", ".", regex=False)
+                 .str.strip()
+            )
+        df_filtro[col] = pd.to_numeric(df_filtro[col], errors="ignore")
+
     colunas_numericas = df_filtro.select_dtypes(include="number").columns
     colunas_texto = df_filtro.select_dtypes(exclude="number").columns
 
