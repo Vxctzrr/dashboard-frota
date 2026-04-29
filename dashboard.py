@@ -115,13 +115,16 @@ if modo_generico:
     #gráfico inteligente
     st.subheader("Gráfico")
 
+    #Converter o que faz sentido
+    for col in df_filtro.columns:
+        if df_filtro[col].dtype == "object":
+            df_filtro[col] = pd.to_numeric(df_filtro[col], errors="ignore")
+
     colunas_numericas = df_filtro.select_dtypes(include="number").columns
     colunas_texto = df_filtro.select_dtypes(exclude="number").columns
 
-    
-    #Forçar conversão para número
-    for col in df_filtro.columns:
-        df_filtro[col] = pd.to_numeric(df_filtro[col], errors="coerce")
+    if len(colunas_numericas) == 0:
+        st.warning("Nenhuma coluna numérica detectada para gráfico!")
 
     tipo_grafico = st.selectbox(
         "Tipo de Gráfico",
