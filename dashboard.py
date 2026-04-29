@@ -115,25 +115,28 @@ if modo_generico:
     #gráfico inteligente
     st.subheader("Gráfico")
 
-    #Converter o que faz sentido
-    for col in df_filtro.columns:
-        if df_filtro[col].dtype == "object":
-            df_filtro[col] = pd.to_numeric(df_filtro[col], errors="ignore")
-
+    #Limpeza inteligente de números
     for col in df_filtro.columns:
         if df_filtro[col].dtype == "object":
             df_filtro[col] = (
                 df_filtro[col]
                 .astype(str)
-                 .str.replace("R$", "", regex=False)
-                .str.replace(".", "", regex=False)
-                 .str.replace(",", ".", regex=False)
-                 .str.strip()
+                .str.replace("R$", "", regex=False)
+                .str.replace(" ", "", regex=False)
+                .str.replace(".", "", regex=False) #remove milhar
+                .str.replace(",", "", regex=False) #remove decimal
+
             )
-        df_filtro[col] = pd.to_numeric(df_filtro[col], errors="ignore")
+            df_filtro[col] = pd.to_numeric(df_filtro[col], errors="ignore")
 
     colunas_numericas = df_filtro.select_dtypes(include="number").columns
     colunas_texto = df_filtro.select_dtypes(exclude="number").columns
+    
+    #arredondar números
+    df_filtro[colunas_numericas] = df_filtro[colunas_numericas].round(2)
+
+    #debug para ver colunas numericas:
+    st.write("colunas numéricas detectadas:", colunas_numericas)
 
     if len(colunas_numericas) == 0:
         st.warning("Nenhuma coluna numérica detectada para gráfico!")
