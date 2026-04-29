@@ -35,8 +35,6 @@ dfs = []
    # st.stop()
 
 
-dfs = []
-
 if arquivos:
     for arquivo in arquivos:
         df_raw = pd.read_excel(arquivo, header=None)
@@ -85,32 +83,87 @@ df.columns = df.columns.str.strip().str.lower()
 
 #Modo genérico
 if modo_generico: 
-    st.title("Analisador Genérico de Planilhas")
+    st.title("Explorador de Planilhas")
 
-    st.write("colunas detectadas:")
+    st.write("### Colunas Detectadas:")
     st.write(df.columns.tolist())
 
+    #Filtros dinâmicos
+    st.subheader("Filtros")
+
+    df_filtro = df.copy()
+
+    for col in df.columns:
+        if df[col].dtype == "object":
+            valores = df[col].dropna().unique()
+            if len(valores) <= 50:
+                selecionados = st.multiselect(f"{col}", valores)
+                if selecionados:
+                    df_filtro - df_filtro [df_filtro[col].isin(selecionados)]
+
+    #Escolha de colunas
+    st.subheader("Visualização")
+
     colunas = st.multiselect(
-        "Escolha colunas para analisar",
-        df.columns
+        "Escolha Colunas",
+        df_filtro.columns,
+        default=df_filtro.columns[:5]
     )
-
     if colunas:
-        st.dataframe(df[colunas])
+        st.dataframe(df_filtro[colunas], use_container_width=True)
 
-        col_num = df[colunas].select_dtypes(include = "number").columns
+    #gráfico inteligente
+    st.subheader("Gráfico")
 
-        if len(col_num) >=2:
-            #import plotly.express as px
+    colunas_numericas = df_filtro.select_dtypes(include="number").columns
+    colunas_texto = df_filtro.select_dtypes(exclude="number").columns
 
-            fig = px.scatter(
-                df,
-                x=col_num[0],
-                y=col_num[1],
-                title="Gráfico automático"
-            )
+    tipo_gráfico = st.selectbox(
+        "Tipo de Gráfico",
+        ["Dispersão","Barras","Linha"]
+    )
+    if len(colunas_numericas) >= 1:
+        if tipo_gráfico == "Dispersão" and len(colunas_numericas) >= 2:
+            x = st.selectbox("Eixo X", colunas_numericas)
+            y = st.selectbox("Eixo Y", colunas_numericas, index=1)
+
+            fig = px.scatter(df_filtro, x=x, y=y)
             st.plotly_chart(fig, use_container_width=True)
 
+        elif tipo_grafico == "Barras":
+            if len(colunas_texto) > 0:
+                x = st.selectbox("Categoria", colunas_numericas)
+                y = st.selectbox("Valor", colunas_numericas)
+
+                agrupado = df_filtro.groupby(x)[y].sum().reset_index()
+
+                fig = px.bar(agrupado, x=x, y=y)
+                st.plotly_chart(fig, use_container_width=True)
+
+        elif tipo_gráfico == "Linha":
+            if len(colunas_numericas) >= 2:
+                x = st.selectbox("Eixo X", colunas_numericas)
+                y = st.selectbox("Eixo Y", colunas_numericas, index=1)
+
+                fig = px.line(df_filtro, x=x, y=y)
+                st.plotly_chart(fig, use_container_width=True)
+
+    #Exportação
+    st.subheader("Exportar")
+
+    from io import BytesIO
+    buffer = BytesIO()
+    df_filtro.to_excel(buffer, index=False)
+    buffer.seek(0)
+
+    st.download_button(
+        "Baixar Dados Filtrados",
+        buffer,
+        "dados_filtrados.xlsx",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
+    #Parar o restante do dashboard
     st.stop()
 
 #DEBUG
