@@ -83,7 +83,7 @@ if modo_generico:
     st.title("Analisador Genérico de Planilhas")
 
     st.write("colunas detectadas:")
-    st.write(df_columns.tolist())
+    st.write(df.columns.tolist())
 
     colunas = st.multiselect(
         "Escolha colunas para analisar",
