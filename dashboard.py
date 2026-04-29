@@ -449,10 +449,6 @@ st.dataframe(ranking_formatado, use_container_width=True)
 #top 5 veículos mais caros
 piores = analise_veiculos.sort_values("custo_km", ascending=False).head(5)
 
-
-#top 5 veículos mais baratos
-melhores = analise_veiculos.sort_values("custo_km", ascending=True).head(5)
-
 #melhores x piores veículos
 melhor = analise_veiculos.sort_values("km_l", ascending=False).iloc[0]
 pior = analise_veiculos.sort_values("km_l").iloc[0]
@@ -461,7 +457,6 @@ st.success(f"Melhor: {melhor['placa']} ({melhor['km_l']:.2f} KM/L)")
 st.error(f"Pior: {pior['placa']} ({pior['km_l']:.2f} KM/L)")
 
 st.subheader ("Top 5 Veículos mais caros")
-st.subheader("Top 5 Veículos mais baratos")
 st.dataframe(piores, use_container_width=True)
 
 #UX²
