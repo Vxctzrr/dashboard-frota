@@ -120,8 +120,8 @@ if modo_generico:
 
     
     #Forçar conversão para número
-    for col in df_gen.columns:
-        df_filtro[col] = pd.to_numeric(df_gen[col], errors="coerce")
+    for col in df_filtro.columns:
+        df_filtro[col] = pd.to_numeric(df_filtro[col], errors="coerce")
 
     tipo_grafico = st.selectbox(
         "Tipo de Gráfico",
