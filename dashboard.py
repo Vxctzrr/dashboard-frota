@@ -50,7 +50,12 @@ if arquivos:
                 break
 
         if linha_inicio is None:
-            continue #vai pular o arquivo bugado
+            if modo_generico:
+                df_temp = df_raw.copy()
+                df_temp.columns = df_temp.iloc[0]
+                df_temp = df_temp[1:].reset_index(drop=True)
+            else:
+                continue #vai pular o arquivo bugado
 
         df_temp = df_raw.iloc[linha_inicio:].copy()
         
@@ -106,7 +111,7 @@ if modo_generico:
             )
             st.plotly_chart(fig, use_container_width=True)
 
-    st.stop
+    st.stop()
 
 #DEBUG
 #st.write("Total de linhas:", df.shape)
