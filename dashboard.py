@@ -118,12 +118,17 @@ if modo_generico:
     colunas_numericas = df_filtro.select_dtypes(include="number").columns
     colunas_texto = df_filtro.select_dtypes(exclude="number").columns
 
-    tipo_gráfico = st.selectbox(
+    
+    #Forçar conversão parar número
+    for col in df_gen.columns:
+        df_gen[col] = pd.to_numeric(df_gen[col], errors="coerce")
+
+    tipo_grafico = st.selectbox(
         "Tipo de Gráfico",
         ["Dispersão","Barras","Linha"]
     )
     if len(colunas_numericas) >= 1:
-        if tipo_gráfico == "Dispersão" and len(colunas_numericas) >= 2:
+        if tipo_grafico == "Dispersão" and len(colunas_numericas) >= 2:
             x = st.selectbox("Eixo X", colunas_numericas)
             y = st.selectbox("Eixo Y", colunas_numericas, index=1)
 
@@ -140,7 +145,7 @@ if modo_generico:
                 fig = px.bar(agrupado, x=x, y=y)
                 st.plotly_chart(fig, use_container_width=True)
 
-        elif tipo_gráfico == "Linha":
+        elif tipo_grafico == "Linha":
             if len(colunas_numericas) >= 2:
                 x = st.selectbox("Eixo X", colunas_numericas)
                 y = st.selectbox("Eixo Y", colunas_numericas, index=1)
