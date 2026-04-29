@@ -136,7 +136,8 @@ if modo_generico:
     df_filtro[colunas_numericas] = df_filtro[colunas_numericas].round(2)
 
     #debug para ver colunas numericas:
-    st.write("colunas numéricas detectadas:", colunas_numericas)
+    #st.write("colunas numéricas detectadas:", colunas_numericas)
+    st.write(df_filtro.dtypes)
 
     if len(colunas_numericas) == 0:
         st.warning("Nenhuma coluna numérica detectada para gráfico!")
