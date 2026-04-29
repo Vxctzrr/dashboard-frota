@@ -99,7 +99,7 @@ if modo_generico:
             if len(valores) <= 50:
                 selecionados = st.multiselect(f"{col}", valores)
                 if selecionados:
-                    df_filtro - df_filtro [df_filtro[col].isin(selecionados)]
+                    df_filtro = df_filtro [df_filtro[col].isin(selecionados)]
 
     #Escolha de colunas
     st.subheader("Visualização")
@@ -119,9 +119,9 @@ if modo_generico:
     colunas_texto = df_filtro.select_dtypes(exclude="number").columns
 
     
-    #Forçar conversão parar número
+    #Forçar conversão para número
     for col in df_gen.columns:
-        df_gen[col] = pd.to_numeric(df_gen[col], errors="coerce")
+        df_filtro[col] = pd.to_numeric(df_gen[col], errors="coerce")
 
     tipo_grafico = st.selectbox(
         "Tipo de Gráfico",
@@ -137,7 +137,7 @@ if modo_generico:
 
         elif tipo_grafico == "Barras":
             if len(colunas_texto) > 0:
-                x = st.selectbox("Categoria", colunas_numericas)
+                x = st.selectbox("Categoria", colunas_texto)
                 y = st.selectbox("Valor", colunas_numericas)
 
                 agrupado = df_filtro.groupby(x)[y].sum().reset_index()
