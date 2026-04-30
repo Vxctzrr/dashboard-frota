@@ -131,6 +131,17 @@ if modo_generico:
 
     colunas_numericas = df_filtro.select_dtypes(include="number").columns
     colunas_texto = df_filtro.select_dtypes(exclude="number").columns
+
+    #Resumo estatístico
+    if len(colunas_numericas) > 0:
+        st.subheader("Resumo Estatístico")
+        st.dataframe(df_filtro.descibe(), use_container_width=True)
+
+    #Correlação
+    if len(colunas_numericas) >= 2:
+        st.subheader("Correlação Entre Variáveis")
+        corr = df_filtro[colunas_numericas].corr()
+        st.dataframe(corr, use_container_width=True)
     
     #arredondar números
     df_filtro[colunas_numericas] = df_filtro[colunas_numericas].round(2)
