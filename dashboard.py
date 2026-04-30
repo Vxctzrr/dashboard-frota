@@ -84,15 +84,21 @@ df.columns = df.columns.str.strip().str.lower()
 #Detecção automatica
 col_km = None
 col_litros = None
+col_gasto = None
 col_placa = None
+col_consumo = None
 
 for col in df.columns:
     if any(x in col for x in ["km", "rodado", "kilometragem", "hodometro"]):
         col_km = col
-    elif any(x in col for x in ["Litro", "litros"]):
+    elif any(x in col for x in ["litro", "litros", "Quantidade"]):
         col_litros = col
     elif "placa" in col:
         col_placa = col
+    elif any(x in col for x in ["gasto", "gasto total"]):
+        col_gasto = col
+    elif any(x in col for x in ["consumo", "média", "consumo médio"]):
+        col_consumo = col
 
 #validação
 if col_km is None:
@@ -105,6 +111,14 @@ if col_litros is None:
 
 if col_placa is None:
     st.error("Coluna de placa não encontrada")
+    st.stop()
+
+if col_gasto is None:
+    st.error("Coluna gasto não encontrada")
+    st.stop()
+
+if col_consumo is None:
+    st.error("Coluna Consumo não encontrada")
     st.stop()
 
 
