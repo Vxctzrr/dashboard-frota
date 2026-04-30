@@ -580,4 +580,4 @@ st.download_button(
 #st.write("DF FILTRADO:", df_filtrado.shape)
 #st.write(df_filtrado.head(10))
 #st.write(analise_veiculos.sort_values("km_l", ascending=False).head(5))
-st.write(df_filtro.dtypes)
+#st.write(df_filtro.dtypes)
