@@ -87,6 +87,10 @@ col_litros = None
 col_gasto = None
 col_placa = None
 col_consumo = None
+#col_setor = None
+
+#for col in df.columns:
+    #if "numero frota"
 
 for col in df.columns:
     if any(x in col for x in ["km", "rodado", "kilometragem", "hodometro"]):
@@ -319,18 +323,10 @@ if "data" in df.columns:
     df["data"] = pd.to_datetime(df["data"], errors="coerce")
 
 with col_f1:
-    opcoes_setor = ["Todos"] + sorted(df["origem"].dropna().unique().tolist())
+    setor = st.selectbox("Setor", df["origem"].unique())
 
-    setores_selecionados = st.multiselect(
-        "Setor", 
-        opcoes_setor,
-        default=["Todos"]
-    )
-
-if "Todos" in setores_selecionados:
-    df_filtrado = df.copy()
-else:
-    df_filtrado = df(df["origem"].sisin(setores_selecionados))
+#aplica filtro de setor
+df_filtrado = df[df["origem"].astype(str).str.strip() == str(setor).strip()]
 
 with col_f2:
     veiculos = df_filtrado[col_placa].dropna().unique()
@@ -424,14 +420,15 @@ analise_veiculos = (
 
 #calcular métricas
 analise_veiculos["km_l"] = (
-    analise_veiculos[col_km] / 
-    analise_veiculos[col_litros].replace(0, pd.NA)
+    pd.to_numeric(analise_veiculos[col_km], errors="coerce") /
+    pd.to_numeric(analise_veiculos[col_litros], errors="coerce").replace(0, pd.NA)
 )
 
 analise_veiculos["custo_km"] = (
-    analise_veiculos[coluna_gasto] / 
-    analise_veiculos[col_km].replace(0, pd.NA)
+    pd.to_numeric(analise_veiculos[coluna_gasto], errors="coerce") /
+    pd.to_numeric(analise_veiculos[col_km], errors="coerce").replace(0, pd.NA)
 )
+
 analise_veiculos = analise_veiculos.fillna(0)
 
 #arredondar números
@@ -588,3 +585,4 @@ st.download_button(
 #st.write(df_filtrado.head(10))
 #st.write(analise_veiculos.sort_values("km_l", ascending=False).head(5))
 #st.write(df_filtro.dtypes)
+#kKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK EU NÃO AGUENTO MAIS VER LINHAS DE CÓDIGO NA MINHA FRENTE ALGUÉM ME AJUDA(I CAN'T HANDLE ANYMORE SEEING CODES IN FRONT OF ME SOME ONE PLEASE HELP ME)KKKKKKKK
