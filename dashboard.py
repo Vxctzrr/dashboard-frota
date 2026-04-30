@@ -95,7 +95,7 @@ col_consumo = None
 for col in df.columns:
     if any(x in col for x in ["km", "rodado", "kilometragem", "hodometro"]):
         col_km = col
-    elif any(x in col for x in ["litro", "litros", "quantidade"]):
+    elif any(x in col for x in ["litro", "litros", "quantidade", "total litros"]):
         col_litros = col
     elif "placa" in col:
         col_placa = col
@@ -430,10 +430,19 @@ analise_veiculos["km_l"] = (
     pd.to_numeric(analise_veiculos[col_litros], errors="coerce").replace(0, pd.NA)
 )
 
+analise_veiculos["km_l"] = (
+    pd.to_numeric(analise_veiculos[col_km], errors="coerce") /
+    pd.to_numeric(analise_veiculos[col_litros], errors="coerce")
+)
+
 analise_veiculos["custo_km"] = (
     pd.to_numeric(analise_veiculos[coluna_gasto], errors="coerce") /
-    pd.to_numeric(analise_veiculos[col_km], errors="coerce").replace(0, pd.NA)
+    pd.to_numeric(analise_veiculos[col_km], errors="coerce")
 )
+
+# só limpa depois, e sem destruir os valores válidos
+analise_veiculos["km_l"] = analise_veiculos["km_l"].replace([float("inf"), -float("inf")], 0)
+analise_veiculos["custo_km"] = analise_veiculos["custo_km"].replace([float("inf"), -float("inf")], 0)
 
 analise_veiculos = analise_veiculos.fillna(0)
 
