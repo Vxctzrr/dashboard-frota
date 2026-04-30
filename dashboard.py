@@ -91,7 +91,7 @@ col_consumo = None
 for col in df.columns:
     if any(x in col for x in ["km", "rodado", "kilometragem", "hodometro"]):
         col_km = col
-    elif any(x in col for x in ["litro", "litros", "Quantidade"]):
+    elif any(x in col for x in ["litro", "litros", "quantidade"]):
         col_litros = col
     elif "placa" in col:
         col_placa = col
@@ -106,19 +106,19 @@ if col_km is None:
     st.stop()
 
 if col_litros is None:
-    st.error("Coluna de litros não encontrada")
+    st.error("Coluna de Litros não encontrada")
     st.stop()
 
 if col_placa is None:
-    st.error("Coluna de placa não encontrada")
+    st.error("Coluna de Placa não encontrada")
     st.stop()
 
 if col_gasto is None:
-    st.error("Coluna gasto não encontrada")
+    st.error("Coluna de Gasto não encontrada")
     st.stop()
 
 if col_consumo is None:
-    st.error("Coluna Consumo não encontrada")
+    st.error("Coluna de Consumo não encontrada")
     st.stop()
 
 
