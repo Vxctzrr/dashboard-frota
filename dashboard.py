@@ -319,22 +319,28 @@ if "data" in df.columns:
     df["data"] = pd.to_datetime(df["data"], errors="coerce")
 
 with col_f1:
-    setor = st.selectbox("Setor", df["origem"].unique())
+    opcoes_setor = ["Todos"] + sorted(df["origem"].dropna().unique().tolist())
 
-#aplica filtro de setor
-df_filtrado = df[df["origem"].astype(str).str.strip() == str(setor).strip()]
+    setores_selecionados = st.multiselect(
+        "Setor", 
+        opcoes_setor,
+        default=["Todos"]
+    )
+
+if "Todos" in setores_selecionados:
+    df_filtrado = df.copy()
+else:
+    df_filtrado = df(df["origem"].sisin(setores_selecionados))
 
 with col_f2:
-    if "placa" in df_filtrado.columns:
-        veiculos = df_filtrado["placa"].dropna().unique()
-        opcoes = ["Todos"] + sorted(veiculos)
-        veiculo_selecionado = st.selectbox("Veículo", opcoes)
-    else:
-        veiculo_selecionado = "Todos"
+    veiculos = df_filtrado[col_placa].dropna().unique()
+    opcoes = ["Todos"] + sorted(veiculos)
+
+    veiculo_selecionado = st.selectbox("Veículo", opcoes)
 
 #aplica filtro de veículos
 if veiculo_selecionado != "Todos": 
-    df_filtrado = df_filtrado[df_filtrado["placa"] == veiculo_selecionado]
+    df_filtrado = df_filtrado[df_filtrado[col_placa] == veiculo_selecionado]
 
 with col_f3:
     if "data" in df_filtrado.columns:
@@ -446,9 +452,6 @@ analise_exibicao.rename(columns={
 }, inplace=True)
 
 st.dataframe(analise_exibicao)
-
-#filtro inteligente
-analise_veiculos = analise_veiculos[analise_veiculos["km_l"] < 20]
 
 #veículos com consumo ruim
 ruins_consumo = analise_veiculos[analise_veiculos["km_l"] < 2]
