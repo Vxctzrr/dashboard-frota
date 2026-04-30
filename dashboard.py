@@ -87,7 +87,7 @@ col_litros = None
 col_placa = None
 
 for col in df.columns:
-    if any(x in col for x in ["km", "rodado", "kilometragem"]):
+    if any(x in col for x in ["km", "rodado", "kilometragem", "hodometro"]):
         col_km = col
     elif any(x in col for x in ["Litro", "litros"]):
         col_litros = col
