@@ -292,6 +292,10 @@ def limpar_valor_monetario(valor):
 #Aplica a função linha a linha
 df[coluna_gasto] = df[coluna_gasto].apply(limpar_valor_monetario)
 
+#criar preço médio automaticamente se não existir
+if "preço médio" not in df.columns and col_litros in df.columns:
+    df["preço médio"] = df[coluna_gasto] / pd.to_numeric(df[col_litros], errors= "coerce")
+
 #tratar data
 if "data" in df.columns:
     df["data"] = pd.to_datetime(df["data"], errors="coerce")
@@ -436,7 +440,7 @@ analise_exibicao["custo_km"] = analise_exibicao["custo_km"].apply(lambda x: f"R$
 
 #melhorar os nomes
 analise_exibicao.rename(columns={
-    "placa": "Veículo",
+    col_placa: "Veículo",
     "km_l": "Km/L",
     "custo_km": "R$/Km"
 }, inplace=True)
@@ -528,7 +532,7 @@ fig2 = px.scatter(
     y="custo_km",
     color="status",
     size=coluna_gasto,
-    hover_data=["placa"],
+    hover_data=[col_placa],
     title="Eficiência vs Custo"
 )
 
