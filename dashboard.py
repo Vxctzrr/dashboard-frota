@@ -137,7 +137,6 @@ if modo_generico:
 
     #debug para ver colunas numericas:
     #st.write("colunas numéricas detectadas:", colunas_numericas)
-    st.write(df_filtro.dtypes)
 
     if len(colunas_numericas) == 0:
         st.warning("Nenhuma coluna numérica detectada para gráfico!")
@@ -530,4 +529,3 @@ st.download_button(
 #st.write(df_filtrado.head(10))
 #st.write(analise_veiculos.sort_values("km_l", ascending=False).head(5))
 st.write(df_filtro.dtypes)
-st.dataframe( df_exibicao.head(10))
