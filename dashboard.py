@@ -95,7 +95,7 @@ for col in df.columns:
         col_litros = col
     elif "placa" in col:
         col_placa = col
-    elif any(x in col for x in ["gasto", "gasto total"]):
+    elif any(x in col for x in ["gasto", "gasto total", "valor total"]):
         col_gasto = col
     elif any(x in col for x in ["consumo", "média", "consumo médio"]):
         col_consumo = col
