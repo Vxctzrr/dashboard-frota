@@ -104,6 +104,12 @@ for col in df.columns:
     elif any(x in col for x in ["consumo", "média", "consumo médio"]):
         col_consumo = col
 
+#forçar nome das colunas
+col_km = "hodometro"
+col_litros = "quantidade"
+coluna_gasto = "valor total"
+col_placa = "placa"
+
 #validação
 if col_km is None:
     st.error("Coluna de KM não encontrada")
