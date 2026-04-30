@@ -81,6 +81,33 @@ if not dfs:
 df = pd.concat(dfs, ignore_index=True)
 df.columns = df.columns.str.strip().str.lower()
 
+#Detecção automatica
+col_km = None
+col_litros = None
+col_placa = None
+
+for col in df.columns:
+    if any(x in col for x in ["km", "rodado", "kilometragem"]):
+        col_km = col
+    elif any(x in col for x in ["Litro", "litros"]):
+        col_litros = col
+    elif "placa" in col:
+        col_placa = col
+
+#validação
+if col_km is None:
+    st.error("Coluna de KM não encontrada")
+    st.stop()
+
+if col_litros is None:
+    st.error("Coluna de litros não encontrada")
+    st.stop()
+
+if col_placa is None:
+    st.error("Coluna de placa não encontrada")
+    st.stop()
+
+
 #Modo genérico
 if modo_generico: 
     st.title("Explorador de Planilhas")
@@ -135,7 +162,7 @@ if modo_generico:
     #Resumo estatístico
     if len(colunas_numericas) > 0:
         st.subheader("Resumo Estatístico")
-        st.dataframe(df_filtro.descibe(), use_container_width=True)
+        st.dataframe(df_filtro.describe(), use_container_width=True)
 
     #Correlação
     if len(colunas_numericas) >= 2:
@@ -327,7 +354,7 @@ total_gasto = df_filtrado[coluna_gasto].sum()
 total_abastecimentos = len(df_filtrado)
 
 #calculo de custo por km
-total_km = df_filtrado["km rodado"].sum()
+total_km = df_filtrado[col_km].sum()
 
 if total_km > 0:
     custo_km = total_gasto / total_km
@@ -336,7 +363,7 @@ else:
 
 
 #calculo seguro de km/l
-total_litros = df_filtrado["total de litros"].sum()
+total_litros = df_filtrado[col_litros].sum()
 
 if total_litros > 0:
     media_km_l = df_filtrado["km rodado"].sum() / total_litros
@@ -362,10 +389,10 @@ st.subheader("Análise por veículo")
 
 #calculo por veículo
 analise_veiculos = (
-    df_filtrado.groupby("placa")
+    df_filtrado.groupby(col_placa)
     .agg({
-        "km rodado": "sum",
-        "total de litros": "sum",
+        col_km: "sum",
+        col_litros: "sum",
         coluna_gasto: "sum"
     })
     .reset_index()
@@ -373,13 +400,13 @@ analise_veiculos = (
 
 #calcular métricas
 analise_veiculos["km_l"] = (
-    analise_veiculos["km rodado"] / 
-    analise_veiculos["total de litros"].replace(0, pd.NA)
+    analise_veiculos[col_km] / 
+    analise_veiculos[col_litros].replace(0, pd.NA)
 )
 
 analise_veiculos["custo_km"] = (
     analise_veiculos[coluna_gasto] / 
-    analise_veiculos["km rodado"].replace(0, pd.NA)
+    analise_veiculos[col_km].replace(0, pd.NA)
 )
 analise_veiculos = analise_veiculos.fillna(0)
 
@@ -441,7 +468,7 @@ if not criticos.empty:
     
 #ranking
 ranking = (
-    df_filtrado.groupby("placa")[coluna_gasto]
+    df_filtrado.groupby(col_placa)[coluna_gasto]
     .sum()
     .sort_values(ascending=False)
     .reset_index()
