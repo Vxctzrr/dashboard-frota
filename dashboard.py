@@ -105,7 +105,7 @@ for col in df.columns:
         col_consumo = col
 
 #forçar nome das colunas
-col_km = "hodometro"
+col_km = "km rodado"
 col_litros = "quantidade"
 coluna_gasto = "valor total"
 col_placa = "placa"
