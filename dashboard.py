@@ -356,7 +356,7 @@ if intervalo_datas and len(intervalo_datas) == 2:
 st.divider()
 
 #converter colunas em números
-for col in ["km rodado", "total de litros", "média"]:
+for col in [col_km, col_litros, col_consumo]:
     if col in df_filtrado.columns:
         df_filtrado[col] = pd.to_numeric(df_filtrado[col], errors="coerce")
 
@@ -368,7 +368,7 @@ total_gasto = df_filtrado[coluna_gasto].sum()
 total_abastecimentos = len(df_filtrado)
 
 #calculo de custo por km
-total_km = df_filtrado[col_km].sum()
+total_km = pd.to_numeric(df_filtrado[col_km], errors="coerce").sum()
 
 if total_km > 0:
     custo_km = total_gasto / total_km
@@ -380,7 +380,7 @@ else:
 total_litros = df_filtrado[col_litros].sum()
 
 if total_litros > 0:
-    media_km_l = df_filtrado["km rodado"].sum() / total_litros
+    media_km_l = df_filtrado[col_km].sum() / total_litros
 else:
     media_km_l = 0
 
