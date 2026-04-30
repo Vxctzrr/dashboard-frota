@@ -364,6 +364,12 @@ st.divider()
 #converter colunas em números
 for col in [col_km, col_litros, col_consumo]:
     if col in df_filtrado.columns:
+        df_filtrado[col] = (
+            df_filtrado [col]
+            .astype(str)
+            .str.replace(",", ".", regex=False)
+            .str.replace(" ", "", regex=False)
+        )
         df_filtrado[col] = pd.to_numeric(df_filtrado[col], errors="coerce")
 
 
