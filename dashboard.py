@@ -460,7 +460,6 @@ def converter_numero_seguro(coluna):
         coluna.astype(str)
         .str.replace("R$", "", regex=False)
         .str.replace(" ", "", regex=False)
-        .str.replace(".", "", regex=False)
         .str.replace(",", ".", regex=False),
         errors="coerce"
     )
