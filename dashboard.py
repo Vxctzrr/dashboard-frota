@@ -589,7 +589,7 @@ for col in df_exibicao.columns:
                 return "R$ 0.00"
 
     #elif pd.api.types.is_numeric_dtype(df_exibicao[col]):
-        df_exibicao[col] = df_exibicao[col].apply(lambda x: f"{float(x):.2f}")
+    df_exibicao[col] = df_exibicao[col].apply(lambda x: f"{float(x):.2f}")
 
 #Baixar os dados
 from io import BytesIO
