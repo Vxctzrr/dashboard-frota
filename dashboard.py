@@ -104,12 +104,6 @@ for col in df.columns:
     elif any(x in col for x in ["consumo", "média", "consumo médio"]):
         col_consumo = col
 
-#forçar nome das colunas
-col_km = "km rodado"
-col_litros = "quantidade"
-coluna_gasto = "valor total"
-col_placa = "placa"
-
 #validação
 if col_km is None:
     st.error("Coluna de KM não encontrada")
@@ -386,6 +380,14 @@ st.subheader("Resumo Geral")
 total_gasto = df_filtrado[coluna_gasto].sum()
 total_abastecimentos = len(df_filtrado)
 
+if col_km not in df_filtrado.columns:
+    st.error(f"Coluna KM não encontrada no filtro: {col_km}")
+    st.stop()
+
+if col_litros not in df_filtrado.columns:
+    st.error(f"coluna Litros não encontrada no filtro : {col_litros}")
+    st.stop()
+
 #calculo de custo por km
 total_km = pd.to_numeric(df_filtrado[col_km], errors="coerce").sum()
 
@@ -437,14 +439,9 @@ analise_veiculos["km_l"] = (
     pd.to_numeric(analise_veiculos[col_litros], errors="coerce").replace(0, pd.NA)
 )
 
-analise_veiculos["km_l"] = (
-    pd.to_numeric(analise_veiculos[col_km], errors="coerce") /
-    pd.to_numeric(analise_veiculos[col_litros], errors="coerce")
-)
-
 analise_veiculos["custo_km"] = (
     pd.to_numeric(analise_veiculos[coluna_gasto], errors="coerce") /
-    pd.to_numeric(analise_veiculos[col_km], errors="coerce")
+    pd.to_numeric(analise_veiculos[col_km], errors="coerce").reaplace(0, pd.NA)
 )
 
 # só limpa depois, e sem destruir os valores válidos
