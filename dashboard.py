@@ -478,10 +478,16 @@ col4.metric("Custo por KM", f"{custo_km:.2f}")
 st.subheader("Análise por veículo")
 
 #calculo por veículo
+st.subheader("Análise por veículo")
+
+#CONVERSÃO CORRETA (ANTES DO GROUPBY)
+df_filtrado = df_filtrado.copy()
+
 df_filtrado[col_km] = df_filtrado[col_km].apply(converter_numero_seguro)
 df_filtrado[col_litros] = df_filtrado[col_litros].apply(converter_numero_seguro)
 df_filtrado[coluna_gasto] = df_filtrado[coluna_gasto].apply(converter_numero_seguro)
 
+# AGRUPAMENTO
 analise_veiculos = (
     df_filtrado.groupby(col_placa)
     .agg({
@@ -492,46 +498,30 @@ analise_veiculos = (
     .reset_index()
 )
 
-#calcular métricas
-#analise_veiculos["km_l"] = (
-   # pd.to_numeric(analise_veiculos[col_km], errors="coerce") /
- #   pd.to_numeric(analise_veiculos[col_litros], errors="coerce").replace(0, pd.NA)
-#)
+#CÁLCULOS SEGUROS
+analise_veiculos["km_l"] = analise_veiculos[col_km] / analise_veiculos[col_litros]
+analise_veiculos["custo_km"] = analise_veiculos[coluna_gasto] / analise_veiculos[col_km]
 
-#analise_veiculos["custo_km"] = (
- #   pd.to_numeric(analise_veiculos[coluna_gasto], errors="coerce") /
-  #  pd.to_numeric(analise_veiculos[col_km], errors="coerce").replace(0, pd.NA)
-#)
+#TRATAR DIVISÃO POR ZERO
+analise_veiculos.replace([float("inf"), -float("inf")], 0, inplace=True)
+analise_veiculos.fillna(0, inplace=True)
 
-analise_veiculos[col_km] = converter_numero_seguro(analise_veiculos[col_km])
-analise_veiculos[col_litros] = converter_numero_seguro(analise_veiculos[col_litros])
-analise_veiculos[coluna_gasto] = converter_numero_seguro(analise_veiculos[coluna_gasto])
+#FILTRAR DADOS INVÁLIDOS
+analise_veiculos = analise_veiculos[
+    (analise_veiculos[col_km] > 0) &
+    (analise_veiculos[col_litros] > 0)
+]
 
-km = pd.to_numeric(analise_veiculos[col_km], errors="coerce")
-litros = pd.to_numeric(analise_veiculos[col_litros], errors="coerce")
-gasto = pd.to_numeric(analise_veiculos[coluna_gasto], errors="coerce")
-
-analise_veiculos["km_l"] = km / litros
-analise_veiculos["custo_km"]  = gasto / km
-
-#corrige infinitos(div/0)
-analise_veiculos["km_l"] = analise_veiculos["km_l"].replace([float("inf"), -float("inf")], None)
-analise_veiculos["custo_km"] = analise_veiculos["custo_km"].replace([float("inf"), -float("inf")], None)
-
-analise_veiculos = analise_veiculos.fillna(0)
-analise_veiculos = analise_veiculos[(analise_veiculos[col_litros] > 0) & (analise_veiculos[col_km] > 0)]
-
-#arredondar números
+#ARREDONDAR
 analise_veiculos["km_l"] = analise_veiculos["km_l"].round(2)
 analise_veiculos["custo_km"] = analise_veiculos["custo_km"].round(2)
 
-#versão de texto formatada
+#TABELA FORMATADA
 analise_exibicao = analise_veiculos.copy()
 
 analise_exibicao["km_l"] = analise_exibicao["km_l"].apply(lambda x: f"{x:.2f}")
 analise_exibicao["custo_km"] = analise_exibicao["custo_km"].apply(lambda x: f"R${x:.2f}")
 
-#melhorar os nomes
 analise_exibicao.rename(columns={
     col_placa: "Veículo",
     "km_l": "Km/L",
@@ -539,31 +529,6 @@ analise_exibicao.rename(columns={
 }, inplace=True)
 
 st.dataframe(analise_exibicao)
-
-#veículos com consumo ruim
-ruins_consumo = analise_veiculos[analise_veiculos["km_l"] < 2]
-
-#veículos com alto custo
-ruins_custo = analise_veiculos[analise_veiculos["custo_km"] > 5]
-
-#st.write("ANÁLISE VEÍCULOS")
-#st.write(analise_veiculos)
-
-#mostrar alertas
-#for _, row in ruins_consumo.iterrows():
- #   st.warning(f"Veículo {row['placa']} com baixo rendimento: {row['km_l']:.2f}")
-
-#for _, row in ruins_custo.iterrows():
- #       st.error(f"Veículo {row['placa']} com alto custo/km: R${row['custo_km']:.2f}")
-def definir_status(row):
-    if row ["km_l"] < 2 or row ["custo_km"] > 5:
-        return "🔴 Crítico"
-    elif row ["km_l"] < 3 or row ["custo_km"] > 4:
-        return "🟡 Atenção"
-    else:
-        return "🟢 Normal"
-
-analise_veiculos["status"] = analise_veiculos.apply(definir_status, axis=1)
 
 st.subheader("Status dos Veículos")
 st.dataframe(analise_veiculos)
