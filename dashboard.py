@@ -460,6 +460,7 @@ def converter_numero_seguro(coluna):
         coluna.astype(str)
         .str.replace("R$", "", regex=False)
         .str.replace(" ", "", regex=False)
+        .str.replace(".", "", regex=False)
         .str.replace(",", ".", regex=False),
         errors="coerce"
     )
@@ -480,6 +481,7 @@ analise_veiculos["km_l"] = analise_veiculos["km_l"].replace([float("inf"), -floa
 analise_veiculos["custo_km"] = analise_veiculos["custo_km"].replace([float("inf"), -float("inf")], None)
 
 analise_veiculos = analise_veiculos.fillna(0)
+analise_veiculos = analise_veiculos[(analise_veiculos[col_litros] > 0) & (analise_veiculos[col_km] > 0)]
 
 #arredondar números
 analise_veiculos["km_l"] = analise_veiculos["km_l"].round(2)
