@@ -478,9 +478,9 @@ col4.metric("Custo por KM", f"{custo_km:.2f}")
 st.subheader("Análise por veículo")
 
 #calculo por veículo
-df_filtrado[col_km] = converter_numero_seguro(df_filtrado[col_km])
-df_filtrado[col_litros] = converter_numero_seguro(df_filtrado[col_litros])
-df_filtrado[coluna_gasto] = converter_numero_seguro(df_filtrado[coluna_gasto])
+df_filtrado[col_km] = df_filtrado[col_km].apply(converter_numero_seguro)
+df_filtrado[col_litros] = df_filtrado[col_litros].apply(converter_numero_seguro)
+df_filtrado[coluna_gasto] = df_filtrado[coluna_gasto].apply(converter_numero_seguro)
 
 analise_veiculos = (
     df_filtrado.groupby(col_placa)
