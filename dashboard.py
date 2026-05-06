@@ -441,7 +441,7 @@ analise_veiculos["km_l"] = (
 
 analise_veiculos["custo_km"] = (
     pd.to_numeric(analise_veiculos[coluna_gasto], errors="coerce") /
-    pd.to_numeric(analise_veiculos[col_km], errors="coerce").reaplace(0, pd.NA)
+    pd.to_numeric(analise_veiculos[col_km], errors="coerce").replace(0, pd.NA)
 )
 
 # só limpa depois, e sem destruir os valores válidos
