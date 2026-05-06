@@ -453,6 +453,29 @@ analise_veiculos = (
  #   pd.to_numeric(analise_veiculos[coluna_gasto], errors="coerce") /
   #  pd.to_numeric(analise_veiculos[col_km], errors="coerce").replace(0, pd.NA)
 #)
+
+#Garantir que os dados estão realmente numéricos
+analise_veiculos[col_km] = (
+    analise_veiculos[col_km]
+    .astype(str)
+    .str.replace(".", "", regex=False)
+    .str.replace(",", "", regex=False)
+)
+
+analise_veiculos[col_litros] = (
+    analise_veiculos[col_litros]
+    .astype(str)
+    .str.replace(".", "", regex=False)
+    .str.replace(",", "", regex=False)
+)
+
+analise_veiculos[coluna_gasto] = (
+    analise_veiculos[coluna_gasto]
+    .astype(str)
+    .str.replace(".", "", regex=False)
+    .str.replace(",", "", regex=False)
+)
+
 km = pd.to_numeric(analise_veiculos[col_km], errors="coerce")
 litros = pd.to_numeric(analise_veiculos[col_litros], errors="coerce")
 gasto = pd.to_numeric(analise_veiculos[coluna_gasto], errors="coerce")
