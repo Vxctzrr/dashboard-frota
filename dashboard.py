@@ -516,6 +516,16 @@ analise_veiculos = analise_veiculos[
 analise_veiculos["km_l"] = analise_veiculos["km_l"].round(2)
 analise_veiculos["custo_km"] = analise_veiculos["custo_km"].round(2)
 
+def definir_status(row):
+    if row["km_l"] < 2 or row["custo_km"] > 5:
+        return "🔴 Crítico"
+    elif row["km_l"] < 3 or row["custo_km"] > 4:
+        return "🟡 Atenção"
+    else:
+        return "🟢 Normal"
+
+analise_veiculos["status"] = analise_veiculos.apply(definir_status, axis=1)
+
 #TABELA FORMATADA
 analise_exibicao = analise_veiculos.copy()
 
