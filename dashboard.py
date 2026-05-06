@@ -576,8 +576,19 @@ colunas_monetarias = ["gasto total", "valor diesel", "valor arla", "preço médi
 
 for col in df_exibicao.columns:
     if col in colunas_monetarias:
-        df_exibicao[col] = df_exibicao[col].apply(lambda x: f"R${float(x):.2f}" if pd.notnull(x) else "R$ 0.00")
-    elif pd.api.types.is_numeric_dtype(df_exibicao[col]):
+        def formatar_moeda(x):
+            try:
+                if pd.isna(x):
+                    return "R$ 0.00"
+                
+                #limpa texto tipo "1.200,50"
+                x = str(x).replace("R$", "").replace(".", "").replace(",", ".").strip()
+
+                return f"R$ {float(x):.2f}"
+            except:
+                return "R$ 0.00"
+
+    #elif pd.api.types.is_numeric_dtype(df_exibicao[col]):
         df_exibicao[col] = df_exibicao[col].apply(lambda x: f"{float(x):.2f}")
 
 #Baixar os dados
