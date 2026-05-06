@@ -117,6 +117,7 @@ if col_km is None:
 
 if col_litros is None:
     st.error("Coluna de Litros não encontrada")
+    st.write("Coluas disponíveis", df.columns.tolist())
     st.stop()
 
 if col_placa is None:
