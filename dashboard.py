@@ -455,26 +455,18 @@ analise_veiculos = (
 #)
 
 #Garantir que os dados estão realmente numéricos
-analise_veiculos[col_km] = (
-    analise_veiculos[col_km]
-    .astype(str)
-    .str.replace(".", "", regex=False)
-    .str.replace(",", "", regex=False)
-)
+def converter_numero_seguro(coluna): 
+    return pd.to_numeric(
+        coluna.astype(str)
+        .str.replace("R$", "", regex=False)
+        .str.replace(" ", "", regex=False)
+        .str.replace(",", ".", regex=False),
+        errors="coerce"
+    )
 
-analise_veiculos[col_litros] = (
-    analise_veiculos[col_litros]
-    .astype(str)
-    .str.replace(".", "", regex=False)
-    .str.replace(",", "", regex=False)
-)
-
-analise_veiculos[coluna_gasto] = (
-    analise_veiculos[coluna_gasto]
-    .astype(str)
-    .str.replace(".", "", regex=False)
-    .str.replace(",", "", regex=False)
-)
+analise_veiculos[col_km] = converter_numero_seguro(analise_veiculos[col_km])
+analise_veiculos[col_litros] = converter_numero_seguro(analise_veiculos[col_litros])
+analise_veiculos[coluna_gasto] = converter_numero_seguro(analise_veiculos[coluna_gasto])
 
 km = pd.to_numeric(analise_veiculos[col_km], errors="coerce")
 litros = pd.to_numeric(analise_veiculos[col_litros], errors="coerce")
