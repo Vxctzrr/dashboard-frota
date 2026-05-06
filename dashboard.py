@@ -37,7 +37,16 @@ dfs = []
 
 if arquivos:
     for arquivo in arquivos:
-        df_raw = pd.read_excel(arquivo, header=None)
+        excel = pd.ExcelFile(arquivo)
+
+        abas = excel.sheet_names
+
+        aba_escolhida = st.selectbox(
+            f"Selecione a Aba - {arquivo.name}",
+            abas
+        )
+
+        df_raw = pd.read_excel(excel, sheet_name=aba_escolhida, header=None)
 
         #encontrar linha onde "tem placa"
         linha_inicio = None
