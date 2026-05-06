@@ -36,6 +36,7 @@ dfs = []
 
 
 if arquivos:
+    abas_por_arquivo = {}
     for arquivo in arquivos:
         excel = pd.ExcelFile(arquivo)
 
@@ -443,19 +444,25 @@ analise_veiculos = (
 )
 
 #calcular métricas
-analise_veiculos["km_l"] = (
-    pd.to_numeric(analise_veiculos[col_km], errors="coerce") /
-    pd.to_numeric(analise_veiculos[col_litros], errors="coerce").replace(0, pd.NA)
-)
+#analise_veiculos["km_l"] = (
+   # pd.to_numeric(analise_veiculos[col_km], errors="coerce") /
+ #   pd.to_numeric(analise_veiculos[col_litros], errors="coerce").replace(0, pd.NA)
+#)
 
-analise_veiculos["custo_km"] = (
-    pd.to_numeric(analise_veiculos[coluna_gasto], errors="coerce") /
-    pd.to_numeric(analise_veiculos[col_km], errors="coerce").replace(0, pd.NA)
-)
+#analise_veiculos["custo_km"] = (
+ #   pd.to_numeric(analise_veiculos[coluna_gasto], errors="coerce") /
+  #  pd.to_numeric(analise_veiculos[col_km], errors="coerce").replace(0, pd.NA)
+#)
+km = pd.to_numeric(analise_veiculos[col_km], errors="coerce")
+litros = pd.to_numeric(analise_veiculos[col_litros], errors="coerce")
+gasto = pd.to_numeric(analise_veiculos[coluna_gasto], errors="coerce")
 
-# só limpa depois, e sem destruir os valores válidos
-analise_veiculos["km_l"] = analise_veiculos["km_l"].replace([float("inf"), -float("inf")], 0)
-analise_veiculos["custo_km"] = analise_veiculos["custo_km"].replace([float("inf"), -float("inf")], 0)
+analise_veiculos["km_l"] = km / litros
+analise_veiculos["custo_km"]  = gasto / km
+
+#corrige infinitos(div/0)
+analise_veiculos["km_l"] = analise_veiculos["km_l"].replace([float("inf"), -float("inf")], None)
+analise_veiculos["custo_km"] = analise_veiculos["custo_km"].replace([float("inf"), -float("inf")], None)
 
 analise_veiculos = analise_veiculos.fillna(0)
 
@@ -596,6 +603,8 @@ for col in df_exibicao.columns:
                 return f"R$ {float(x):.2f}"
             except:
                 return "R$ 0.00"
+            
+            df_exibicao[col] = df_exibicao[col].apply(formatar_moeda)
 
     elif pd.api.types.is_numeric_dtype(df_exibicao[col]):
         df_exibicao[col] = df_exibicao[col].apply(lambda x: f"{float(x):.2f}")
