@@ -3,6 +3,51 @@ import streamlit as st
 import plotly.express as px
 import os
 import re
+
+#Garantir que os dados estão realmente numéricos
+def converter_numero_seguro(valor):
+    import pandas as pd
+    import re
+
+    # nulos
+    if pd.isna(valor):
+        return 0.0
+
+    # já numérico
+    if isinstance(valor, (int, float)):
+        return float(valor)
+
+    v = str(valor).strip()
+
+    if v == "":
+        return 0.0
+
+    # remove moeda e lixo
+    v = re.sub(r"[^\d,.\-]", "", v)
+
+    if v == "":
+        return 0.0
+
+    # CASO 1: tem vírgula e ponto → detectar padrão
+    if "," in v and "." in v:
+        if v.rfind(",") > v.rfind("."):
+            # BR → 1.234,56
+            v = v.replace(".", "").replace(",", ".")
+        else:
+            # EUA → 1,234.56
+            v = v.replace(",", "")
+
+    # CASO 2: só vírgula → decimal BR
+    elif "," in v:
+        v = v.replace(",", ".")
+
+    # CASO 3: só ponto → já ok (EUA)
+    # não faz nada
+
+    try:
+        return float(v)
+    except:
+        return 0.0
 #st.cache_data.clear()
 
 st.set_page_config(layout="wide")
@@ -433,6 +478,10 @@ col4.metric("Custo por KM", f"{custo_km:.2f}")
 st.subheader("Análise por veículo")
 
 #calculo por veículo
+df_filtrado[col_km] = converter_numero_seguro(df_filtrado[col_km])
+df_filtrado[col_litros] = converter_numero_seguro(df_filtrado[col_litros])
+df_filtrado[coluna_gasto] = converter_numero_seguro(df_filtrado[coluna_gasto])
+
 analise_veiculos = (
     df_filtrado.groupby(col_placa)
     .agg({
@@ -453,16 +502,6 @@ analise_veiculos = (
  #   pd.to_numeric(analise_veiculos[coluna_gasto], errors="coerce") /
   #  pd.to_numeric(analise_veiculos[col_km], errors="coerce").replace(0, pd.NA)
 #)
-
-#Garantir que os dados estão realmente numéricos
-def converter_numero_seguro(coluna): 
-    return pd.to_numeric(
-        coluna.astype(str)
-        .str.replace("R$", "", regex=False)
-        .str.replace(" ", "", regex=False)
-        .str.replace(",", ".", regex=False),
-        errors="coerce"
-    )
 
 analise_veiculos[col_km] = converter_numero_seguro(analise_veiculos[col_km])
 analise_veiculos[col_litros] = converter_numero_seguro(analise_veiculos[col_litros])
