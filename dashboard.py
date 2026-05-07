@@ -107,6 +107,7 @@ if arquivos:
                 df_temp = df_raw.copy()
                 df_temp.columns = df_temp.iloc[0]
                 df_temp = df_temp[1:].reset_index(drop=True)
+                continue
             else:
                 continue #vai pular o arquivo bugado
 
@@ -158,6 +159,26 @@ for col in df.columns:
         col_gasto = col
     elif any(x in col for x in ["consumo", "média", "consumo médio"]):
         col_consumo = col
+
+#modo genérico
+if modo_generico:
+    st.title ("Explorador de planilhas")
+    st.write("### Colunas Detectadas:")
+    st.write(df.columns.tolist())
+
+    df_filtro = df.copy()
+    st.subheader("Visualização")
+    
+    colunas = st.multiselect(
+        "Escolha Colunas",
+        df_filtro.columns,
+        default=df_filtro.columns[:5]
+    )
+
+    if colunas:
+        st.dataframe(df_filtro[colunas], use_container_width=True)
+
+    st.stop
 
 #validação
 if col_km is None:
