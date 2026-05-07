@@ -183,24 +183,24 @@ if modo_generico:
 #validação
 if col_km is None:
     st.error("Coluna de KM não encontrada")
-    st.stop()
+    raise SystemExit
 
 if col_litros is None:
     st.error("Coluna de Litros não encontrada")
     st.write("Coluas disponíveis", df.columns.tolist())
-    st.stop()
+    raise SystemExit
 
 if col_placa is None:
     st.error("Coluna de Placa não encontrada")
-    st.stop()
+    raise SystemExit
 
 if col_gasto is None:
     st.error("Coluna de Gasto não encontrada")
-    st.stop()
+    raise SystemExit
 
 if col_consumo is None:
     st.error("Coluna de Consumo não encontrada")
-    st.stop()
+    raise SystemExit
 
 
 #Modo genérico
