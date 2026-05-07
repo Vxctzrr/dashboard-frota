@@ -107,6 +107,12 @@ if arquivos:
                 df_temp = df_raw.copy()
                 df_temp.columns = df_temp.iloc[0]
                 df_temp = df_temp[1:].reset_index(drop=True)
+
+                df_temp.columns = df_temp.columns.astype(str).str.strip().str.lower()
+
+                df_temp["origem"] = arquivo.name
+
+                dfs.append(df_temp)
                 continue
             else:
                 continue #vai pular o arquivo bugado
@@ -159,48 +165,6 @@ for col in df.columns:
         col_gasto = col
     elif any(x in col for x in ["consumo", "média", "consumo médio"]):
         col_consumo = col
-
-#modo genérico
-if modo_generico:
-    st.title ("Explorador de planilhas")
-    st.write("### Colunas Detectadas:")
-    st.write(df.columns.tolist())
-
-    df_filtro = df.copy()
-    st.subheader("Visualização")
-    
-    colunas = st.multiselect(
-        "Escolha Colunas",
-        df_filtro.columns,
-        default=df_filtro.columns[:5]
-    )
-
-    if colunas:
-        st.dataframe(df_filtro[colunas], use_container_width=True)
-
-    st.stop
-
-#validação
-if col_km is None:
-    st.error("Coluna de KM não encontrada")
-    raise SystemExit
-
-if col_litros is None:
-    st.error("Coluna de Litros não encontrada")
-    st.write("Coluas disponíveis", df.columns.tolist())
-    raise SystemExit
-
-if col_placa is None:
-    st.error("Coluna de Placa não encontrada")
-    raise SystemExit
-
-if col_gasto is None:
-    st.error("Coluna de Gasto não encontrada")
-    raise SystemExit
-
-if col_consumo is None:
-    st.error("Coluna de Consumo não encontrada")
-    raise SystemExit
 
 
 #Modo genérico
@@ -322,6 +286,29 @@ if modo_generico:
     #Parar o restante do dashboard
     st.stop()
 
+
+#validação
+if col_km is None:
+    st.error("Coluna de KM não encontrada")
+    raise SystemExit
+
+if col_litros is None:
+    st.error("Coluna de Litros não encontrada")
+    st.write("Coluas disponíveis", df.columns.tolist())
+    raise SystemExit
+
+if col_placa is None:
+    st.error("Coluna de Placa não encontrada")
+    raise SystemExit
+
+if col_gasto is None:
+    st.error("Coluna de Gasto não encontrada")
+    raise SystemExit
+
+if col_consumo is None:
+    st.error("Coluna de Consumo não encontrada")
+    raise SystemExit  
+
 #DEBUG
 #st.write("Total de linhas:", df.shape)
 #st.write(df.head())
@@ -335,7 +322,7 @@ for col in df.columns:
 
 if coluna_gasto is None:
     st.error("Nenhuma coluna de gasto encontrada")
-    st.stop()
+    raise SystemExit
 
 #LIMPEZA FORTE (À prova de balas)
 def limpar_valor_monetario(valor):
