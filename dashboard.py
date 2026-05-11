@@ -94,33 +94,50 @@ if arquivos:
 
         df_raw = pd.read_excel(excel, sheet_name=aba_escolhida, header=None)
 
-        #encontrar linha onde "tem placa"
-        linha_inicio = None
+        #procurar cabeçalho REAL
+        linha_cabecalho = None
+
         for i in range(len(df_raw)):
             linha = df_raw.iloc[i].astype(str).str.lower()
-            if linha.str.contains("placa").any():
-                linha_inicio = i
+
+            if(
+                linha.str.contains("placa").any()
+                and(
+                    linha.str.contains("km").any()
+                    or linha.str.contains("litros").any()
+                )
+            ):
+                linha_cabecalho = i
                 break
 
-        if linha_inicio is None:
-            if modo_generico:
-                df_temp = df_raw.copy()
-                df_temp.columns = df_temp.iloc[0]
-                df_temp = df_temp[1:].reset_index(drop=True)
+        if linha_cabecalho is None:
+            continue
 
-                df_temp.columns = df_temp.columns.astype(str).str.strip().str.lower()
+        #usa linha correta como cabeçalho
+        cabecalho = df_raw.iloc[linha_cabecalho]
 
-                df_temp["origem"] = arquivo.name
 
-                dfs.append(df_temp)
-                continue
-            else:
-                continue #vai pular o arquivo bugado
+        df_temp = df_raw.iloc[linha_cabecalho + 1:].copy()
 
-        df_temp = df_raw.iloc[linha_inicio:].copy()
+        df_temp.columns = cabecalho
         
-        df_temp.columns = df_temp.iloc[0]
-        df_temp = df_temp[1:]
+        df_temp = df_temp.reset_index(drop=True)
+
+        #limpar nomes
+        df_temp.columns = (
+            df_temp.columns
+            .astype(str)
+            .str.strip()
+            .str.lower()
+        )
+
+        #remover *unnamed*
+        df_temp = df_temp.loc[
+            :,
+            ~df_temp.columns.str.contains("unnamed", case=False)
+        ]
+
+
         df_temp = df_temp.reset_index(drop=True)
 
         df_temp.columns = df_temp.columns.astype(str).str.strip().str.lower()
@@ -671,4 +688,4 @@ st.download_button(
 #st.write(df_filtrado.head(10))
 #st.write(analise_veiculos.sort_values("km_l", ascending=False).head(5))
 #st.write(df_filtro.dtypes)
-#kKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK EU NÃO AGUENTO MAIS VER LINHAS DE CÓDIGO NA MINHA FRENTE ALGUÉM ME AJUDA(I CAN'T HANDLE ANYMORE SEEING CODES IN FRONT OF ME SOME ONE PLEASE HELP ME)KKKKKKKK
+#KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK EU NÃO AGUENTO MAIS VER LINHAS DE CÓDIGO NA MINHA FRENTE ALGUÉM ME AJUDA(I CAN'T HANDLE ANYMORE SEEING CODES IN FRONT OF ME SOME ONE PLEASE HELP ME)KKKKKKKK
