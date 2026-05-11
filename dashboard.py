@@ -178,16 +178,24 @@ for col in df.columns:
     # KM REAL
     if (
         ("km rodado" in nome)
+        or ("km" in nome)
+        or ("rodado" in nome)
         or ("quilometragem" in nome)
         or ("hodometro" in nome)
         or ("hodômetro" in nome)
     ):
         col_km = col
 
+
     # LITROS
     elif (
         "total de litros" in nome
-        or "litros" in nome
+        or ("litros" in nome)
+        or ("litro" in nome)
+        or ("quantidade" in nome)
+        or ("total" in nome)
+        or ("total litros" in nome)
+        or ("litros" in nome)
     ):
         col_litros = col
 
