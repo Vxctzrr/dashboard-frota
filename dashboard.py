@@ -172,15 +172,38 @@ col_consumo = None
     #if "numero frota"
 
 for col in df.columns:
-    if any(x in col for x in ["km", "rodado", "kilometragem", "hodometro"]):
+
+    nome = str(col).strip().lower()
+
+    # KM REAL
+    if (
+        ("km rodado" in nome)
+        or ("quilometragem" in nome)
+        or ("hodometro" in nome)
+        or ("hodômetro" in nome)
+    ):
         col_km = col
-    elif any(x in col for x in ["litro", "litros", "quantidade", "total litros"]):
+
+    # LITROS
+    elif (
+        "total de litros" in nome
+        or "litros" in nome
+    ):
         col_litros = col
-    elif "placa" in col:
+
+    # PLACA
+    elif "placa" in nome:
         col_placa = col
-    elif any(x in col for x in ["gasto", "gasto total", "valor total", "combustivel"]):
+
+    # GASTO
+    elif (
+        "gasto total" in nome
+        or "valor total" in nome
+    ):
         col_gasto = col
-    elif any(x in col for x in ["consumo", "média", "consumo médio"]):
+
+    # MÉDIA
+    elif "média" in nome:
         col_consumo = col
 
 
