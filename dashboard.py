@@ -105,7 +105,9 @@ if arquivos:
                 .str.lower()
             )
 
-            texto = " ".join(linha.tolist())
+            texto = " ".join(
+                map(str, linha.fillna("").tolist())
+            )
 
             if (
                 "placa" in texto
@@ -688,7 +690,7 @@ for col in df_exibicao.columns:
             except:
                 return "R$ 0.00"
             
-            df_exibicao[col] = df_exibicao[col].apply(formatar_moeda)
+        df_exibicao[col] = df_exibicao[col].apply(formatar_moeda)
 
     elif pd.api.types.is_numeric_dtype(df_exibicao[col]):
         df_exibicao[col] = df_exibicao[col].apply(lambda x: f"{float(x):.2f}")
