@@ -98,57 +98,42 @@ if arquivos:
         linha_cabecalho = None
 
         for i in range(len(df_raw)):
-            linha = df_raw.iloc[i].astype(str).str.lower()
+            linha = (
+                df_raw.iloc[i]
+                .astype(str)
+                .str.strip()
+                .str.lower()
+            )
 
-            if(
-                linha.str.contains("placa").any()
-                and(
-                    linha.str.contains("km").any()
-                    or linha.str.contains("litros").any()
-                )
+            texto = " ".join(linha.tolist())
+
+            if (
+                "placa" in texto
+                or "km" in texto
+                or "quilometragem" in texto
+                or"hodometro" in texto
+                or "litros" in texto
+                or "gasto" in texto
+                or "valor total" in texto
             ):
                 linha_cabecalho = i
                 break
-
+        #Se não encontrar o cabeçalho
         if linha_cabecalho is None:
 
-            #modo genérico aceita qualquer uma
             if modo_generico:
-
-                df_temp = df_raw.copy()
-                
-                df_temp.columns = df_temp.iloc[0]
-
-                df_temp = df_temp[1:].reset_index(drop=True)
-
+                linha_cabecalho = 0
             else:
                 continue
-        
-        else:
-            #usa cabeçalho detectado
-            cabecalho = df_raw.iloc[linha_cabecalho]
 
-            df_temp = df_raw.iloc[linha_cabecalho + 1:].copy()
-            
-            df_temp = df_temp.reset_index(drop=True)
-
-        #usa linha correta como cabeçalho
+        #montar dataframe 
         cabecalho = df_raw.iloc[linha_cabecalho]
-
 
         df_temp = df_raw.iloc[linha_cabecalho + 1:].copy()
 
         df_temp.columns = cabecalho
-        
-        df_temp = df_temp.reset_index(drop=True)
 
-        #limpar nomes
-        df_temp.columns = (
-            df_temp.columns
-            .astype(str)
-            .str.strip()
-            .str.lower()
-        )
+        df_temp = df_temp.reset_index(drop=True)
 
         #remover *unnamed*
         df_temp = df_temp.loc[
@@ -197,9 +182,14 @@ for col in df.columns:
     # KM REAL
     if (
         ("km rodado" in nome)
-        or ("quilometragem" in nome)
-        or ("hodometro" in nome)
-        or ("hodômetro" in nome)
+        or "quilometragem" in nome
+        or "hodometro" in nome
+        or "hodômetro" in nome
+        or "odometro" in nome
+        or "odômetro" in nome
+        or "distancia" in nome
+        or nome == "km"
+        or "km total" in nome
     ):
         col_km = col
 
@@ -264,16 +254,12 @@ if modo_generico:
     #Limpeza inteligente de números
     for col in df_filtro.columns:
         if df_filtro[col].dtype == "object":
-            df_filtro[col] = (
-                df_filtro[col]
-                .astype(str)
-                .str.replace("R$", "", regex=False)
-                .str.replace(" ", "", regex=False)
-                .str.replace(".", "", regex=False) #remove milhar
-                .str.replace(",", "", regex=False) #remove decimal
+            
+            df_filtro[col] = df_filtro[col].apply(converter_numero_seguro)
 
-            )
-            df_filtro[col] = pd.to_numeric(df_filtro[col], errors="coerce")
+            #só converte se tiver número seguro
+            if df_filtro[col].notna().sum() > 0:
+                df_filtro[col] = pd.to_numeric(df_filtro[col], errors="coerce")
 
     colunas_numericas = df_filtro.select_dtypes(include="number").columns
     colunas_texto = df_filtro.select_dtypes(exclude="number").columns
