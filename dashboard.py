@@ -114,8 +114,9 @@ if arquivos:
 
             #modo genérico aceita qualquer uma
             if modo_generico:
-                df_temp = df_raw.copy()
 
+                df_temp = df_raw.copy()
+                
                 df_temp.columns = df_temp.iloc[0]
 
                 df_temp = df_temp[1:].reset_index(drop=True)
@@ -130,6 +131,16 @@ if arquivos:
             df_temp = df_raw.iloc[linha_cabecalho + 1:].copy()
             
             df_temp = df_temp.reset_index(drop=True)
+
+        #usa linha correta como cabeçalho
+        cabecalho = df_raw.iloc[linha_cabecalho]
+
+
+        df_temp = df_raw.iloc[linha_cabecalho + 1:].copy()
+
+        df_temp.columns = cabecalho
+        
+        df_temp = df_temp.reset_index(drop=True)
 
         #limpar nomes
         df_temp.columns = (
