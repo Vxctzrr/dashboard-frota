@@ -111,17 +111,25 @@ if arquivos:
                 break
 
         if linha_cabecalho is None:
-            continue
 
-        #usa linha correta como cabeçalho
-        cabecalho = df_raw.iloc[linha_cabecalho]
+            #modo genérico aceita qualquer uma
+            if modo_generico:
+                df_temp = df_raw.copy()
 
+                df_temp.columns = df_temp.iloc[0]
 
-        df_temp = df_raw.iloc[linha_cabecalho + 1:].copy()
+                df_temp = df_temp[1:].reset_index(drop=True)
 
-        df_temp.columns = cabecalho
+            else:
+                continue
         
-        df_temp = df_temp.reset_index(drop=True)
+        else:
+            #usa cabeçalho detectado
+            cabecalho = df_raw.iloc[linha_cabecalho]
+
+            df_temp = df_raw.iloc[linha_cabecalho + 1:].copy()
+            
+            df_temp = df_temp.reset_index(drop=True)
 
         #limpar nomes
         df_temp.columns = (
