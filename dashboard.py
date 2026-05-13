@@ -217,7 +217,12 @@ for col in df.columns:
         col_gasto = col
 
     # MÉDIA
-    elif "média" in nome:
+    elif (
+        "média" in nome 
+        or "media" in nome
+        or "consumo" in nome
+
+    ):
         col_consumo = col
 
 
