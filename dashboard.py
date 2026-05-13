@@ -201,6 +201,7 @@ for col in df.columns:
     elif (
         "total de litros" in nome
         or "litros" in nome
+        or "quantidade" in nome
     ):
         col_litros = col
 
