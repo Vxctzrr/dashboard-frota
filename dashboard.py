@@ -115,6 +115,7 @@ if arquivos:
                 or "quilometragem" in texto
                 or"hodometro" in texto
                 or "litros" in texto
+                or "quantidade" in texto
                 or "gasto" in texto
                 or "valor total" in texto
             ):
