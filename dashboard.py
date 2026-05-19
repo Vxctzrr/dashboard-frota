@@ -141,7 +141,7 @@ if arquivos:
         #remover *unnamed*
         df_temp = df_temp.loc[
             :,
-            ~df_temp.columns.str.contains("unnamed", case=False)
+            ~df_temp.columns.str.contains("unnamed", case=False, na=False)
         ]
 
 
@@ -149,7 +149,10 @@ if arquivos:
 
         df_temp.columns = df_temp.columns.astype(str).str.strip().str.lower()
 
-        df_temp = df_temp.loc[:, ~df_temp.columns.str.contains('unnamed', case=False)]
+        df_temp = df_temp.loc[
+            :,
+              ~df_temp.columns.str.contains('unnamed', case=False, na=False)
+        ]
 
         for col in df_temp.columns:
             if df_temp[col].dtype == 'object':
