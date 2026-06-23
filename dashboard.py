@@ -460,10 +460,17 @@ with col_f2:
 if veiculo_selecionado != "Todos": 
     df_filtrado = df_filtrado[df_filtrado[col_placa] == veiculo_selecionado]
 
+if "data" in df.columns:
+    df["data"] = pd.to_datetime(
+        df["data"],
+        errors="coerce",
+        dayfirst=True
+    )
+
 with col_f3:
     if "data" in df_filtrado.columns:
-        data_min = df_filtrado["data"].min()
-        data_max = df_filtrado["data"].max()
+        data_min = df_filtrado["data"].min().date()
+        data_max = df_filtrado["data"].max().date()
 
         intervalo_datas = st.date_input(
             "Período",
@@ -477,9 +484,13 @@ if intervalo_datas and len(intervalo_datas) == 2:
     data_inicio, data_fim = intervalo_datas
 
     df_filtrado = df_filtrado[
-        (df_filtrado["data"] >= pd.to_datetime(data_inicio)) &
-        (df_filtrado["data"] <= pd.to_datetime(data_fim))
+        (df_filtrado["data"].dt.date >= pd.to_datetime(data_inicio)) &
+        (df_filtrado["data"].dt.date <= pd.to_datetime(data_fim))
     ]
+
+if df_filtrado.empty:
+    st.warning("Nenhum registro encontrado para o período selecionado.")
+    st.stop
 
 st.write("Após filtro de data:", len(df_filtrado))
 
