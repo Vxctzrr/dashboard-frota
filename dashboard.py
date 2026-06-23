@@ -230,7 +230,7 @@ for col in df.columns:
 
 
 #Modo genérico
-if modo_generico: 
+if modo_generico:  # type: ignore
     st.title("Explorador de Planilhas")
 
     st.write("### Colunas Detectadas:")
@@ -481,6 +481,8 @@ if intervalo_datas and len(intervalo_datas) == 2:
         (df_filtrado["data"] <= pd.to_datetime(data_fim))
     ]
 
+st.write("Após filtro de data:", len(df_filtrado))
+
 st.divider()
 
 #converter colunas em números
@@ -729,4 +731,4 @@ st.download_button(
 #st.write(df_filtrado.head(10))
 #st.write(analise_veiculos.sort_values("km_l", ascending=False).head(5))
 #st.write(df_filtro.dtypes)
-#KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK EU NÃO AGUENTO MAIS VER LINHAS DE CÓDIGO NA MINHA FRENTE ALGUÉM ME AJUDA(I CAN'T HANDLE ANYMORE SEEING CODES IN FRONT OF ME SOME ONE PLEASE HELP ME)KKKKKKKK
+#KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK EU NÃO AGUENTO MAIS VER LINHAS DE CÓDIGO NA MINHA FRENTE ALGUÉM ME AJUDA(I CAN'T HANDLE ANYMORE SEEING CODES IN FRONT OF ME SOMEONE PLEASE HELP ME)KKKKKKKK
