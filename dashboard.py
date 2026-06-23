@@ -699,7 +699,7 @@ if (
 ):
     
     volume_mensal = (
-        df.groupby(
+        df_filtrado.groupby(
             ["mes", "tipo_combustivel"]
         )[col_litros]
         .sum()
@@ -722,7 +722,8 @@ if (
         use_container_width=True
     )
 
-fig_comb=px.bar(
+    #gráfico 
+    fig_comb=px.bar(
     volume_mensal,
     x="mes",
     y=col_litros,
