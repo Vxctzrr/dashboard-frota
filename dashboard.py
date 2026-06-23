@@ -709,13 +709,13 @@ if (
     tabela_volume = (
         volume_mensal.pivot(
             index="mes",
-            columns="tipo_cobustivel",
+            columns="tipo_combustivel",
             values=col_litros
         )
         .fillna(0)
     )
     
-    st.subheader("Volume de COmbustível por Mês")
+    st.subheader("Volume de Combustível por Mês")
 
     st.dataframe(
         tabela_volume,
