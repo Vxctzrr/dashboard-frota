@@ -170,6 +170,20 @@ if not dfs:
 df = pd.concat(dfs, ignore_index=True)
 df.columns = df.columns.str.strip().str.lower()
 
+#Detectar coluna de combustível/produto
+col_produto = None
+
+for col in df.columns:
+    nome = str(col).lower()
+
+    if(
+        "produto" in nome
+        or "combustivel" in nome
+        or "combustível" in nome
+    ):
+        col_produto = col
+        break
+
 #Detecção automatica
 col_km = None
 col_litros = None
@@ -426,6 +440,26 @@ if "preço médio" not in df.columns and col_litros in df.columns:
 if "data" in df.columns:
     df["data"] = pd.to_datetime(df["data"], errors="coerce")
 
+if "data" in df.columns:
+    df["mes"] = df["data"].dt.to_period("M").astype(str)
+
+#Classificação do combustivel
+def classificar_combustível(x):
+
+    x = str(x).upper()
+
+    if "DIESEL" in x:
+        return "Diesel"
+    elif "ETANOL" in x:
+        return "Etanol"
+    elif "GASOLINA" in x:
+        return "Gasolina"
+    else:
+        return "Outros"
+    
+if col_produto:
+    df["tipo_combustivel"] = df[col_produto].apply(classificar_combustível)
+
 #título
 st.title("Dashboard de Consumo da Frota")
 st.caption("Análise de abastecimento, eficiência e custos por veículo")
@@ -657,6 +691,50 @@ st.error(f"Pior: {pior['placa']} ({pior['km_l']:.2f} KM/L)")
 
 st.subheader ("Top 5 Veículos mais caros")
 st.dataframe(piores, use_container_width=True)
+
+#volume mensal de combustível
+if (
+    col_produto is not None
+    and "mes" in df.columns
+):
+    
+    volume_mensal = (
+        df.groupby(
+            ["mes", "tipo_combustivel"]
+        )[col_litros]
+        .sum()
+        .reset_index()
+    )
+
+    tabela_volume = (
+        volume_mensal.pivot(
+            index="mes",
+            columns="tipo_cobustivel",
+            values=col_litros
+        )
+        .fillna(0)
+    )
+    
+    st.subheader("Volume de COmbustível por Mês")
+
+    st.dataframe(
+        tabela_volume,
+        use_container_width=True
+    )
+
+fig_comb=px.bar(
+    volume_mensal,
+    x="mes",
+    y=col_litros,
+    color="tipo_combustivel",
+    barmode="group",
+    title="Volume Mensal por Combustível"
+)
+
+st.plotly_chart(
+    fig_comb,
+    use_container_width=True
+)
 
 #UX²
 st.subheader("Análises Visuais")
