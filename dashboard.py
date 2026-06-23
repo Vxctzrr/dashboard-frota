@@ -484,8 +484,8 @@ if intervalo_datas and len(intervalo_datas) == 2:
     data_inicio, data_fim = intervalo_datas
 
     df_filtrado = df_filtrado[
-        (df_filtrado["data"].dt.date >= pd.to_datetime(data_inicio)) &
-        (df_filtrado["data"].dt.date <= pd.to_datetime(data_fim))
+        (df_filtrado["data"].dt.date >= data_inicio) &
+        (df_filtrado["data"].dt.date <= data_fim)
     ]
 
 if df_filtrado.empty:
