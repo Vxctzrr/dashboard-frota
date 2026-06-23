@@ -444,7 +444,7 @@ if "data" in df.columns:
     df["mes"] = df["data"].dt.to_period("M").astype(str)
 
 #Classificação do combustivel
-def classificar_combustível(x):
+def classificar_combustivel(x):
 
     x = str(x).upper()
 
@@ -458,7 +458,7 @@ def classificar_combustível(x):
         return "Outros"
     
 if col_produto:
-    df["tipo_combustivel"] = df[col_produto].apply(classificar_combustível)
+    df["tipo_combustivel"] = df[col_produto].apply(classificar_combustivel)
 
 #título
 st.title("Dashboard de Consumo da Frota")
@@ -683,11 +683,27 @@ st.dataframe(ranking_formatado, use_container_width=True)
 piores = analise_veiculos.sort_values("custo_km", ascending=False).head(5)
 
 #melhores x piores veículos
-melhor = analise_veiculos.sort_values("km_l", ascending=False).iloc[0]
-pior = analise_veiculos.sort_values("km_l").iloc[0]
+if not analise_veiculos.empty:
 
-st.success(f"Melhor: {melhor['placa']} ({melhor['km_l']:.2f} KM/L)")
-st.error(f"Pior: {pior['placa']} ({pior['km_l']:.2f} KM/L)")
+    melhor = analise_veiculos.sort_values(
+        "km_l",
+        ascending=False
+    ).iloc[0]
+
+    pior = analise_veiculos.sort_values(
+        "km_l"
+    ).iloc[0]
+
+    st.success(
+        f"Melhor: {melhor[col_placa]} ({melhor['km_l']:.2f} KM/L)"
+    )
+
+    st.error(
+        f"Pior: {pior[col_placa]} ({pior['km_l']:.2f} KM/L)"
+    )
+
+else:
+    st.warning("Nenhum veículo encontrado para os filtros selecionados.")
 
 st.subheader ("Top 5 Veículos mais caros")
 st.dataframe(piores, use_container_width=True)
@@ -698,6 +714,11 @@ if (
     and "mes" in df.columns
 ):
     
+    df_filtrado[col_litros] = (
+        df_filtrado[col_litros]
+        .apply(converter_numero_seguro)
+    )
+
     volume_mensal = (
         df_filtrado.groupby(
             ["mes", "tipo_combustivel"]
