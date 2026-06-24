@@ -540,6 +540,10 @@ if df_filtrado.empty:
     st.warning("Nenhum registro encontrado para o período selecionado")
     st.stop()
 
+
+st.write(df_filtrado["data"].min())
+st.write(df_filtrado["data"].max())
+
 st.divider()
 
 #converter colunas em números
