@@ -516,9 +516,6 @@ with col_f3:
 
         data_min = df_filtrado["data"].min().date()
         data_max = df_filtrado["data"].max().date()
-
-        st.write("Data mínima:", data_min)
-        st.write("Data máxima:", data_max)
         
         intervalo_datas = st.date_input(
             "Período",
@@ -531,19 +528,17 @@ with col_f3:
 if intervalo_datas and len(intervalo_datas) == 2:
     data_inicio, data_fim = intervalo_datas
 
+    data_inicio = pd.to_datetime(data_inicio)
+    data_fim = pd.to_datetime(data_fim) + pd.Timedelta(days=1)
+
     df_filtrado = df_filtrado[
-        (df_filtrado["data"].dt.date >= data_inicio) &
-        (df_filtrado["data"].dt.date <= data_fim)
+        (df_filtrad["data"] >= data_inicio) &
+        (df_filtrado["data"]<= data_fim)
     ]
 
 if df_filtrado.empty:
     st.warning("Nenhum registro encontrado para o período selecionado")
     st.stop()
-
-st.write("Registros após filtro:", len(df_filtrado))
-
-if "data" in df_filtrado.columns:
-    st.write(df_filtrado["data"].head(20))
 
 st.divider()
 
