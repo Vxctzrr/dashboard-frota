@@ -711,18 +711,15 @@ st.dataframe(piores, use_container_width=True)
 #volume mensal de combustível
 if (
     col_produto is not None
-    and "mes" in df.columns
+    and "mes" in df_filtrado.columns
+    and "tipo_combustivel" in df_filtrado.columns
 ):
-    
-    df_filtrado[col_litros] = (
-        df_filtrado[col_litros]
-        .apply(converter_numero_seguro)
-    )
+
+    df_volume = df_filtrado.copy()
+    df_volume[col_litros] = df_volume[col_litros].apply(converter_numero_seguro)
 
     volume_mensal = (
-        df_filtrado.groupby(
-            ["mes", "tipo_combustivel"]
-        )[col_litros]
+        df_volume.groupby(["mes", "tipo_combustivel"])[col_litros]
         .sum()
         .reset_index()
     )
@@ -734,29 +731,28 @@ if (
             values=col_litros
         )
         .fillna(0)
+        .round(2)
     )
-    
-    st.subheader("Volume de Combustível por Mês")
 
-    st.dataframe(
-        tabela_volume,
+    st.subheader("Volume de Combustível por Mês")
+    st.dataframe(tabela_volume, use_container_width=True)
+
+    fig_comb = px.bar(
+        volume_mensal,
+        x="mes",
+        y=col_litros,
+        color="tipo_combustivel",
+        barmode="group",
+        title="Volume Mensal por Combustível"
+    )
+
+    st.plotly_chart(
+        fig_comb,
         use_container_width=True
     )
 
-    #gráfico 
-    fig_comb=px.bar(
-    volume_mensal,
-    x="mes",
-    y=col_litros,
-    color="tipo_combustivel",
-    barmode="group",
-    title="Volume Mensal por Combustível"
-)
-
-st.plotly_chart(
-    fig_comb,
-    use_container_width=True
-)
+else:
+    st.warning("Não foi possível gerar o gráfico de volume mensal por combustível.")
 
 #UX²
 st.subheader("Análises Visuais")
