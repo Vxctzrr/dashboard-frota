@@ -378,8 +378,7 @@ if col_gasto is None:
     raise SystemExit
 
 if col_consumo is None:
-    st.error("Coluna de Consumo não encontrada")
-    raise SystemExit  
+    col_consumo = col_km  
 
 #DEBUG
 #st.write("Total de linhas:", df.shape)
@@ -531,33 +530,6 @@ if intervalo_datas and len(intervalo_datas) == 2:
 if df_filtrado.empty:
     st.warning("Nenhum registro encontrado para o período selecionado")
     st.stop()
-
-with col_f3:
-    if "data" in df_filtrado.columns:
-        data_min = df_filtrado["data"].min().date()
-        data_max = df_filtrado["data"].max().date()
-
-        intervalo_datas = st.date_input(
-            "Período",
-            value=(data_min, data_max)
-        )
-    else:
-        intervalo_datas = None
-
-#Aplica filtro de datas
-if intervalo_datas and len(intervalo_datas) == 2:
-    data_inicio, data_fim = intervalo_datas
-
-    df_filtrado = df_filtrado[
-        (df_filtrado["data"].dt.date >= data_inicio) &
-        (df_filtrado["data"].dt.date <= data_fim)
-    ]
-
-if df_filtrado.empty:
-    st.warning("Nenhum registro encontrado para o período selecionado.")
-    st.stop
-
-st.write("Após filtro de data:", len(df_filtrado))
 
 st.divider()
 
@@ -787,6 +759,13 @@ if (
 
 else:
     st.warning("Não foi possível gerar o gráfico de volume mensal por combustível.")
+
+if "data" in df_filtrado.columns:
+    df_filtrado["mes"] = (
+        pd.to_datetime(df_filtrado["data"], errors="coerce")
+        .dt.to_period("M")
+        .astype(str)
+    )
 
 #UX²
 st.subheader("Análises Visuais")
