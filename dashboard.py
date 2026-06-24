@@ -735,7 +735,10 @@ if (
     )
 
     st.subheader("Volume de Combustível por Mês")
-    st.dataframe(tabela_volume, use_container_width=True)
+    st.dataframe(
+        tabela_volume.style.format("{:,.2f}"),
+        use_container_width=True
+    )
 
     fig_comb = px.bar(
         volume_mensal,
