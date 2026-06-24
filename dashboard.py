@@ -532,7 +532,7 @@ if intervalo_datas and len(intervalo_datas) == 2:
     data_fim = pd.to_datetime(data_fim) + pd.Timedelta(days=1)
 
     df_filtrado = df_filtrado[
-        (df_filtrad["data"] >= data_inicio) &
+        (df_filtrado["data"] >= data_inicio) &
         (df_filtrado["data"]<= data_fim)
     ]
 
