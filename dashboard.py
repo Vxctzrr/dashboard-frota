@@ -496,7 +496,7 @@ if veiculo_selecionado != "Todos":
 
 #garantir que o df_filtrado tem data correta
 if "data" in df_filtrado.columns:
-    df_filtrado-df_filtrado.copy()
+    df_filtrado=df_filtrado.copy()
 
     df_filtrado["data"] = pd.to_datetime(
         df_filtrado["data"],
