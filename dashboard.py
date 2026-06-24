@@ -494,12 +494,43 @@ with col_f2:
 if veiculo_selecionado != "Todos": 
     df_filtrado = df_filtrado[df_filtrado[col_placa] == veiculo_selecionado]
 
-if "data" in df.columns:
-    df["data"] = pd.to_datetime(
-        df["data"],
+#garantir que o df_filtrado tem data correta
+if "data" in df_filtrado.columns:
+    df_filtrado-df_filtrado.copy()
+
+    df_filtrado["data"] = pd.to_datetime(
+        df_filtrado["data"],
         errors="coerce",
         dayfirst=True
     )
+
+    df_filtrado = df_filtrado[df_filtrado["data"].notna()]
+
+with col_f3:
+    if "data" in df_filtrado.columns and not df_filtrado.empty:
+
+        data_min = df_filtrado["data"].min().date()
+        data_max = df_filtrado["data"].max().date()
+
+        intervalo_datas = st.date_input(
+            "Período",
+            value=(data_min, data_max)
+        )
+    else:
+        intervalo_datas = None
+
+#aplicar filtro de datas
+if intervalo_datas and len(intervalo_datas) == 2:
+    data_inicio, data_fim = intervalo_datas
+
+    df_filtrado = df_filtrado[
+        (df_filtrado["data"].dt.date >= data_inicio) &
+        (df_filtrado["data"].dt.date <= data_fim)
+    ]
+
+if df_filtrado.empy:
+    st.warning("Nenhum registro encontrado para o período seelecionado")
+    st.stop()
 
 with col_f3:
     if "data" in df_filtrado.columns:
