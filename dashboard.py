@@ -537,8 +537,10 @@ if df_filtrado.empty:
     st.warning("Nenhum registro encontrado para o período selecionado")
     st.stop()
 
-st.write(df_filtrado["data"].head())
+if "data" in df_filtrado.columns:
+    st.write(df_filtrado["data"].head())
 st.write("Registros:", len(df_filtrado))
+st.write ("Linhas após filtro:", len(df_filtrado))
 
 st.divider()
 
