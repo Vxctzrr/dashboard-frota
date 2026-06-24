@@ -517,6 +517,9 @@ with col_f3:
         data_min = df_filtrado["data"].min().date()
         data_max = df_filtrado["data"].max().date()
 
+        st.write("Data mínima:", data_min)
+        st.write("Data máxima:", data_max)
+        
         intervalo_datas = st.date_input(
             "Período",
             value=(data_min, data_max)
@@ -537,10 +540,10 @@ if df_filtrado.empty:
     st.warning("Nenhum registro encontrado para o período selecionado")
     st.stop()
 
+st.write("Registros após filtro:", len(df_filtrado))
+
 if "data" in df_filtrado.columns:
-    st.write(df_filtrado["data"].head())
-st.write("Registros:", len(df_filtrado))
-st.write ("Linhas após filtro:", len(df_filtrado))
+    st.write(df_filtrado["data"].head(20))
 
 st.divider()
 
