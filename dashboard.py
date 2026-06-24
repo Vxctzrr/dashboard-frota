@@ -1,117 +1,100 @@
 import pandas as pd
 import streamlit as st
 import plotly.express as px
+import os
 import re
+
+#Garantir que os dados estão realmente numéricos
+def converter_numero_seguro(valor):
+    import pandas as pd
+    import re
+
+    # nulos
+    if pd.isna(valor):
+        return 0.0
+
+    # já numérico
+    if isinstance(valor, (int, float)):
+        return float(valor)
+
+    v = str(valor).strip()
+
+    if v == "":
+        return 0.0
+
+    # remove moeda e lixo
+    v = re.sub(r"[^\d,.\-]", "", v)
+
+    if v == "":
+        return 0.0
+
+    # CASO 1: tem vírgula e ponto → detectar padrão
+    if "," in v and "." in v:
+        if v.rfind(",") > v.rfind("."):
+            # BR → 1.234,56
+            v = v.replace(".", "").replace(",", ".")
+        else:
+            # EUA → 1,234.56
+            v = v.replace(",", "")
+
+    # CASO 2: só vírgula → decimal BR
+    elif "," in v:
+        v = v.replace(",", ".")
+
+    # CASO 3: só ponto → já ok (EUA)
+    # não faz nada
+
+    try:
+        return float(v)
+    except:
+        return 0.0
+#st.cache_data.clear()
 
 st.set_page_config(layout="wide")
 
-
-def converter_numero_seguro(valor):
-    if pd.isna(valor):
-        return 0.0
-
-    if isinstance(valor, (int, float)):
-        return float(valor)
-
-    v = str(valor).strip()
-
-    if v == "":
-        return 0.0
-
-    v = re.sub(r"[^\d,.\-]", "", v)
-
-    if v == "":
-        return 0.0
-
-    if "," in v and "." in v:
-        if v.rfind(",") > v.rfind("."):
-            v = v.replace(".", "").replace(",", ".")
-        else:
-            v = v.replace(",", "")
-
-    elif "," in v:
-        v = v.replace(",", ".")
-
-    try:
-        return float(v)
-    except:
-        return 0.0
-
-
-def converter_numero_ou_nan(valor):
-    if pd.isna(valor):
-        return pd.NA
-
-    if isinstance(valor, (int, float)):
-        return float(valor)
-
-    v = str(valor).strip()
-
-    if not re.search(r"\d", v):
-        return pd.NA
-
-    v = re.sub(r"[^\d,.\-]", "", v)
-
-    if "," in v and "." in v:
-        if v.rfind(",") > v.rfind("."):
-            v = v.replace(".", "").replace(",", ".")
-        else:
-            v = v.replace(",", "")
-
-    elif "," in v:
-        v = v.replace(",", ".")
-
-    try:
-        return float(v)
-    except:
-        return pd.NA
-
-
-def classificar_combustivel(x):
-    x = str(x).upper()
-
-    if "DIESEL" in x:
-        return "Diesel"
-    elif "ETANOL" in x:
-        return "Etanol"
-    elif "GASOLINA" in x:
-        return "Gasolina"
-    else:
-        return "Outros"
-
-
+#esconder UI do Streamlit
 st.markdown("""
     <style>
-    #MainMenu {visibility:hidden;}
-    footer {visibility:hidden;}
-    header {visibility:hidden;}
-    </style>
+    #MainMenu {Visibility:hidden;}
+    footer {visibility: hidden;}
+    header {visibiity: hidden;}
+    </style> 
 """, unsafe_allow_html=True)
 
-
+#carregar dados
+#pasta = "saida"
 arquivos = st.file_uploader(
     "Envie Planilhas",
     type=["xlsx"],
-    accept_multiple_files=True
+    accept_multiple_files= True
 )
 
-modo_generico = st.toggle("Modo genérico (qualquer planilha)")
+#botão modo genérico
+modo_generico = st.toggle("Modo genérico(qualquer planilha)")
 
 dfs = []
 
+#Dica Extra: Garantir que a pasta existe antes de tentar ler
+#if not os.path.exists(pasta):
+   # st.error(f"A pasta '{pasta}' não foi encontrada.")
+   # st.stop()
+
+
 if arquivos:
+    abas_por_arquivo = {}
     for arquivo in arquivos:
         excel = pd.ExcelFile(arquivo)
+
         abas = excel.sheet_names
 
         aba_escolhida = st.selectbox(
             f"Selecione a Aba - {arquivo.name}",
-            abas,
-            key=f"aba_{arquivo.name}"
+            abas
         )
 
         df_raw = pd.read_excel(excel, sheet_name=aba_escolhida, header=None)
 
+        #procurar cabeçalho REAL
         linha_cabecalho = None
 
         for i in range(len(df_raw)):
@@ -122,52 +105,61 @@ if arquivos:
                 .str.lower()
             )
 
-            texto = " ".join(map(str, linha.fillna("").tolist()))
+            texto = " ".join(
+                map(str, linha.fillna("").tolist())
+            )
 
             if (
                 "placa" in texto
-                or "km" in texto
-                or "quilometragem" in texto
-                or "hodometro" in texto
-                or "hodômetro" in texto
-                or "litros" in texto
-                or "quantidade" in texto
-                or "gasto" in texto
-                or "valor total" in texto
+                and (
+                    "km" in texto
+                    or "quilometragem" in texto
+                    or"hodometro" in texto
+                    or "litros" in texto
+                    or "quantidade" in texto
+                    or "gasto" in texto
+                    or "valor total" in texto
+                )
             ):
                 linha_cabecalho = i
                 break
-
+        #Se não encontrar o cabeçalho
         if linha_cabecalho is None:
+
             if modo_generico:
                 linha_cabecalho = 0
             else:
                 continue
 
+        #montar dataframe 
         cabecalho = df_raw.iloc[linha_cabecalho]
 
         df_temp = df_raw.iloc[linha_cabecalho + 1:].copy()
+
         df_temp.columns = cabecalho
+
         df_temp = df_temp.reset_index(drop=True)
 
-        df_temp.columns = df_temp.columns.astype(str)
-
+        #remover *unnamed*
         df_temp = df_temp.loc[
             :,
             ~df_temp.columns.str.contains("unnamed", case=False, na=False)
         ]
 
-        df_temp.columns = (
-            df_temp.columns
-            .astype(str)
-            .str.strip()
-            .str.lower()
-        )
+
+        df_temp = df_temp.reset_index(drop=True)
+
+        df_temp.columns = df_temp.columns.astype(str).str.strip().str.lower()
+
+        df_temp = df_temp.loc[
+            :,
+              ~df_temp.columns.str.contains('unnamed', case=False, na=False)
+        ]
 
         for col in df_temp.columns:
-            if df_temp[col].dtype == "object":
+            if df_temp[col].dtype == 'object':
                 df_temp[col] = df_temp[col].astype(str).str.strip()
-                df_temp[col] = df_temp[col].replace("nan", "")
+                df_temp[col] = df_temp[col].replace('nan', '')
 
         df_temp["origem"] = arquivo.name
         dfs.append(df_temp)
@@ -176,29 +168,42 @@ if not dfs:
     st.error("Nenhum arquivo válido foi enviado.")
     st.stop()
 
+#juntar tudo
 df = pd.concat(dfs, ignore_index=True)
 df.columns = df.columns.str.strip().str.lower()
 
-
+#Detectar coluna de combustível/produto
 col_produto = None
-col_km = None
-col_litros = None
-col_gasto = None
-col_placa = None
-col_consumo = None
 
 for col in df.columns:
-    nome = str(col).strip().lower()
+    nome = str(col).lower()
 
-    if (
+    if(
         "produto" in nome
         or "combustivel" in nome
         or "combustível" in nome
     ):
         col_produto = col
+        break
 
-    elif (
-        "km rodado" in nome
+#Detecção automatica
+col_km = None
+col_litros = None
+col_gasto = None
+col_placa = None
+col_consumo = None
+#col_setor = None
+
+#for col in df.columns:
+    #if "numero frota"
+
+for col in df.columns:
+
+    nome = str(col).strip().lower()
+
+    # KM REAL
+    if (
+        ("km rodado" in nome)
         or "quilometragem" in nome
         or "hodometro" in nome
         or "hodômetro" in nome
@@ -210,6 +215,8 @@ for col in df.columns:
     ):
         col_km = col
 
+
+    # LITROS
     elif (
         "total de litros" in nome
         or "litros" in nome
@@ -217,30 +224,35 @@ for col in df.columns:
     ):
         col_litros = col
 
+    # PLACA
     elif "placa" in nome:
         col_placa = col
 
+    # GASTO
     elif (
         "gasto total" in nome
         or "valor total" in nome
-        or "gasto" in nome
     ):
         col_gasto = col
 
+    # MÉDIA
     elif (
-        "média" in nome
+        "média" in nome 
         or "media" in nome
         or "consumo" in nome
+
     ):
         col_consumo = col
 
 
-if modo_generico:
+#Modo genérico
+if modo_generico:  # type: ignore
     st.title("Explorador de Planilhas")
 
     st.write("### Colunas Detectadas:")
     st.write(df.columns.tolist())
 
+    #Filtros dinâmicos
     st.subheader("Filtros")
 
     df_filtro = df.copy()
@@ -251,8 +263,9 @@ if modo_generico:
             if len(valores) <= 50:
                 selecionados = st.multiselect(f"{col}", valores)
                 if selecionados:
-                    df_filtro = df_filtro[df_filtro[col].isin(selecionados)]
+                    df_filtro = df_filtro [df_filtro[col].isin(selecionados)]
 
+    #Escolha de colunas
     st.subheader("Visualização")
 
     colunas = st.multiselect(
@@ -260,63 +273,75 @@ if modo_generico:
         df_filtro.columns,
         default=df_filtro.columns[:5]
     )
-
     if colunas:
         st.dataframe(df_filtro[colunas], use_container_width=True)
 
+    #gráfico inteligente
     st.subheader("Gráfico")
 
-    df_grafico = df_filtro.copy()
+    #Limpeza inteligente de números
+    for col in df_filtro.columns:
+        tentativa = pd.to_numeric(
+            df_filtro[col].astype(str),
+            errors="coerce"
+        )
+        if tentativa.notna().sum > len(df_filtro) * 0.7:
+            df_filtro[col]= tentativa
 
-    for col in df_grafico.columns:
-        convertido = df_grafico[col].apply(converter_numero_ou_nan)
+    colunas_numericas = df_filtro.select_dtypes(include="number").columns
+    colunas_texto = df_filtro.select_dtypes(exclude="number").columns
 
-        if convertido.notna().mean() >= 0.7:
-            df_grafico[col] = pd.to_numeric(convertido, errors="coerce")
-
-    colunas_numericas = df_grafico.select_dtypes(include="number").columns
-    colunas_texto = df_grafico.select_dtypes(exclude="number").columns
-
+    #Resumo estatístico
     if len(colunas_numericas) > 0:
         st.subheader("Resumo Estatístico")
-        st.dataframe(df_grafico[colunas_numericas].describe(), use_container_width=True)
+        st.dataframe(df_filtro.describe(), use_container_width=True)
 
+    #Correlação
     if len(colunas_numericas) >= 2:
         st.subheader("Correlação Entre Variáveis")
-        corr = df_grafico[colunas_numericas].corr()
+        corr = df_filtro[colunas_numericas].corr()
         st.dataframe(corr, use_container_width=True)
+    
+    #arredondar números
+    df_filtro[colunas_numericas] = df_filtro[colunas_numericas].round(2)
+
+    #debug para ver colunas numericas:
+    #st.write("colunas numéricas detectadas:", colunas_numericas)
 
     if len(colunas_numericas) == 0:
-        st.warning("Nenhuma coluna numérica detectada para gráfico.")
-    else:
-        tipo_grafico = st.selectbox(
-            "Tipo de Gráfico",
-            ["Dispersão", "Barras", "Linha"]
-        )
+        st.warning("Nenhuma coluna numérica detectada para gráfico!")
 
+    tipo_grafico = st.selectbox(
+        "Tipo de Gráfico",
+        ["Dispersão","Barras","Linha"]
+    )
+    if len(colunas_numericas) >= 1:
         if tipo_grafico == "Dispersão" and len(colunas_numericas) >= 2:
             x = st.selectbox("Eixo X", colunas_numericas)
             y = st.selectbox("Eixo Y", colunas_numericas, index=1)
 
-            fig = px.scatter(df_grafico, x=x, y=y)
+            fig = px.scatter(df_filtro, x=x, y=y)
             st.plotly_chart(fig, use_container_width=True)
 
-        elif tipo_grafico == "Barras" and len(colunas_texto) > 0:
-            x = st.selectbox("Categoria", colunas_texto)
-            y = st.selectbox("Valor", colunas_numericas)
+        elif tipo_grafico == "Barras":
+            if len(colunas_texto) > 0:
+                x = st.selectbox("Categoria", colunas_texto)
+                y = st.selectbox("Valor", colunas_numericas)
 
-            agrupado = df_grafico.groupby(x)[y].sum().reset_index()
+                agrupado = df_filtro.groupby(x)[y].sum().reset_index()
 
-            fig = px.bar(agrupado, x=x, y=y)
-            st.plotly_chart(fig, use_container_width=True)
+                fig = px.bar(agrupado, x=x, y=y)
+                st.plotly_chart(fig, use_container_width=True)
 
-        elif tipo_grafico == "Linha" and len(colunas_numericas) >= 2:
-            x = st.selectbox("Eixo X", colunas_numericas)
-            y = st.selectbox("Eixo Y", colunas_numericas, index=1)
+        elif tipo_grafico == "Linha":
+            if len(colunas_numericas) >= 2:
+                x = st.selectbox("Eixo X", colunas_numericas)
+                y = st.selectbox("Eixo Y", colunas_numericas, index=1)
 
-            fig = px.line(df_grafico, x=x, y=y)
-            st.plotly_chart(fig, use_container_width=True)
+                fig = px.line(df_filtro, x=x, y=y)
+                st.plotly_chart(fig, use_container_width=True)
 
+    #Exportação
     st.subheader("Exportar")
 
     from io import BytesIO
@@ -331,67 +356,133 @@ if modo_generico:
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
+    #Parar o restante do dashboard
     st.stop()
 
 
+#validação
 if col_km is None:
-    st.error("Coluna de KM não encontrada.")
-    st.write("Colunas disponíveis:", df.columns.tolist())
-    st.stop()
+    st.error("Coluna de KM não encontrada")
+    raise SystemExit
 
 if col_litros is None:
-    st.error("Coluna de Litros não encontrada.")
-    st.write("Colunas disponíveis:", df.columns.tolist())
-    st.stop()
+    st.error("Coluna de Litros não encontrada")
+    st.write("Coluas disponíveis", df.columns.tolist())
+    raise SystemExit
 
 if col_placa is None:
-    st.error("Coluna de Placa não encontrada.")
-    st.write("Colunas disponíveis:", df.columns.tolist())
-    st.stop()
+    st.error("Coluna de Placa não encontrada")
+    raise SystemExit
 
 if col_gasto is None:
-    st.error("Coluna de Gasto não encontrada.")
-    st.write("Colunas disponíveis:", df.columns.tolist())
-    st.stop()
+    st.error("Coluna de Gasto não encontrada")
+    raise SystemExit
 
 if col_consumo is None:
-    col_consumo = col_km
+    col_consumo = col_km  
 
+#DEBUG
+#st.write("Total de linhas:", df.shape)
+#st.write(df.head())
 
-df[col_gasto] = df[col_gasto].apply(converter_numero_seguro)
-df[col_litros] = df[col_litros].apply(converter_numero_seguro)
-df[col_km] = df[col_km].apply(converter_numero_seguro)
+#detectar coluna de gasto automaticamente (CORREÇÃO 2: hashtag adicionada)
+coluna_gasto = None
+for col in df.columns:
+    if "gasto" in col or "valor total" in col:
+        coluna_gasto = col
+        break
+
+if coluna_gasto is None:
+    st.error("Nenhuma coluna de gasto encontrada")
+    raise SystemExit
+
+#LIMPEZA FORTE (À prova de balas)
+def limpar_valor_monetario(valor):
+    #Se for nulo ou vazio
+    if pd.isna(valor) or str(valor).strip().lower() in ['', 'nan', 'none']:
+        return 0.0
+        
+    #Se o Excel já entregou o dado redondinho como float ou int
+    if isinstance(valor, (int, float)):
+        return float(valor)
+        
+    #Se chegou aqui, é texto. Vamos limpar!
+    v_str = str(valor).strip()
+    
+    #Arranca fora 'R$', letras e espaços. Deixa só números, ponto, vírgula e sinal negativo
+    v_str = re.sub(r"[^\d,.-]", "", v_str)
+    
+    #Se sobrou só um traço ou formatação vazia
+    if v_str in ["", "-", ".", ","]:
+        return 0.0
+        
+    #Lida com o padrão brasileiro (1.500,50) vs americano (1500.50)
+    if '.' in v_str and ',' in v_str:
+        # Tem os dois: tira o ponto de milhar e troca vírgula decimal por ponto
+        v_str = v_str.replace('.', '').replace(',', '.')
+    elif ',' in v_str:
+        #Só tem vírgula: converte ela pra ponto decimal
+        v_str = v_str.replace(',', '.')
+        
+    try:
+        return float(v_str)
+    except:
+        return 0.0 #Se der ruim em algum caso bizarro, vira 0
+
+#Aplica a função linha a linha
+df[coluna_gasto] = df[coluna_gasto].apply(limpar_valor_monetario)
+
+#criar preço médio automaticamente se não existir
+if "preço médio" not in df.columns and col_litros in df.columns:
+    df["preço médio"] = df[coluna_gasto] / pd.to_numeric(df[col_litros], errors= "coerce")
+
+#tratar data
+if "data" in df.columns:
+    df["data"] = pd.to_datetime(df["data"], errors="coerce")
 
 if "data" in df.columns:
-    df["data"] = pd.to_datetime(
-        df["data"],
-        errors="coerce",
-        dayfirst=True
-    )
-
-    df = df[df["data"].notna()].copy()
     df["mes"] = df["data"].dt.to_period("M").astype(str)
 
+#Classificação do combustivel
+def classificar_combustivel(x):
+
+    x = str(x).upper()
+
+    if "DIESEL" in x:
+        return "Diesel"
+    elif "ETANOL" in x:
+        return "Etanol"
+    elif "GASOLINA" in x:
+        return "Gasolina"
+    else:
+        return "Outros"
+    
 if col_produto:
     df["tipo_combustivel"] = df[col_produto].apply(classificar_combustivel)
 
-
-if "preço médio" not in df.columns:
-    df["preço médio"] = df[col_gasto] / df[col_litros].replace(0, pd.NA)
-
-
+#título
 st.title("Dashboard de Consumo da Frota")
 st.caption("Análise de abastecimento, eficiência e custos por veículo")
 st.divider()
 
+#UX
+st.subheader("Resumo Geral")
+st.divider()
+
 st.header("Filtros")
 
+#layout com 3 filtros lado a lado
 col_f1, col_f2, col_f3 = st.columns(3)
 
-with col_f1:
-    setor = st.selectbox("Setor", df["origem"].dropna().unique())
+#garatir que a coluna data está correta
+if "data" in df.columns:
+    df["data"] = pd.to_datetime(df["data"], errors="coerce")
 
-df_filtrado = df[df["origem"].astype(str).str.strip() == str(setor).strip()].copy()
+with col_f1:
+    setor = st.selectbox("Setor", df["origem"].unique())
+
+#aplica filtro de setor
+df_filtrado = df[df["origem"].astype(str).str.strip() == str(setor).strip()]
 
 with col_f2:
     veiculos = (
@@ -400,96 +491,155 @@ with col_f2:
         .astype(str)
         .unique()
     )
-
     opcoes = ["Todos"] + sorted(veiculos)
 
     veiculo_selecionado = st.selectbox("Veículo", opcoes)
 
-if veiculo_selecionado != "Todos":
-    df_filtrado = df_filtrado[
-        df_filtrado[col_placa].astype(str) == str(veiculo_selecionado)
-    ].copy()
+#aplica filtro de veículos
+if veiculo_selecionado != "Todos": 
+    df_filtrado = df_filtrado[df_filtrado[col_placa] == veiculo_selecionado]
+
+#garantir que o df_filtrado tem data correta
+if "data" in df_filtrado.columns:
+    df_filtrado=df_filtrado.copy()
+
+    df_filtrado["data"] = pd.to_datetime(
+        df_filtrado["data"],
+        errors="coerce",
+        dayfirst=True
+    )
+
+    df_filtrado = df_filtrado[df_filtrado["data"].notna()]
 
 with col_f3:
     if "data" in df_filtrado.columns and not df_filtrado.empty:
+
         data_min = df_filtrado["data"].min().date()
         data_max = df_filtrado["data"].max().date()
 
         intervalo_datas = st.date_input(
             "Período",
-            value=(data_min, data_max),
-            key="filtro_periodo_principal"
+            value=(data_min, data_max)
         )
     else:
         intervalo_datas = None
 
+#aplicar filtro de datas
 if intervalo_datas and len(intervalo_datas) == 2:
     data_inicio, data_fim = intervalo_datas
 
     df_filtrado = df_filtrado[
         (df_filtrado["data"].dt.date >= data_inicio) &
         (df_filtrado["data"].dt.date <= data_fim)
-    ].copy()
+    ]
 
 if df_filtrado.empty:
-    st.warning("Nenhum registro encontrado para os filtros selecionados.")
+    st.warning("Nenhum registro encontrado para o período selecionado")
     st.stop()
 
-if "data" in df_filtrado.columns:
-    df_filtrado["mes"] = df_filtrado["data"].dt.to_period("M").astype(str)
+st.write(df_filtrado["data"].head())
+st.write("Registros:", len(df_filtrado))
 
 st.divider()
+
+#converter colunas em números
+for col in [col_km, col_litros, col_consumo]:
+    if col in df_filtrado.columns:
+        df_filtrado[col] = (
+            df_filtrado [col]
+            .astype(str)
+            .str.replace(",", ".", regex=False)
+            .str.replace(" ", "", regex=False)
+        )
+        df_filtrado[col] = pd.to_numeric(df_filtrado[col], errors="coerce")
 
 
 st.subheader("Resumo Geral")
 
-total_gasto = df_filtrado[col_gasto].sum()
+#métricas
+total_gasto = df_filtrado[coluna_gasto].sum()
 total_abastecimentos = len(df_filtrado)
-total_km = df_filtrado[col_km].sum()
+
+if col_km not in df_filtrado.columns:
+    st.error(f"Coluna KM não encontrada no filtro: {col_km}")
+    st.stop()
+
+if col_litros not in df_filtrado.columns:
+    st.error(f"coluna Litros não encontrada no filtro : {col_litros}")
+    st.stop()
+
+#calculo de custo por km
+total_km = pd.to_numeric(df_filtrado[col_km], errors="coerce").sum()
+
+if total_km > 0:
+    custo_km = total_gasto / total_km
+else:
+    custo_km = 0
+
+
+#calculo seguro de km/l
 total_litros = df_filtrado[col_litros].sum()
 
-media_km_l = total_km / total_litros if total_litros > 0 else 0
-custo_km = total_gasto / total_km if total_km > 0 else 0
+if total_litros > 0:
+    media_km_l = df_filtrado[col_km].sum() / total_litros
+else:
+    media_km_l = 0
 
 col1, col2 = st.columns(2)
-col1.metric("Gasto Total", f"R$ {total_gasto:.2f}")
+
+col1.metric("Gasto Total", f"R${total_gasto:.2f}")
 col2.metric("Abastecimentos", total_abastecimentos)
 
+#métricas
 col3, col4 = st.columns(2)
+
 col3.metric("Média KM/L", f"{media_km_l:.2f}")
-col4.metric("Custo por KM", f"R$ {custo_km:.2f}")
+col4.metric("Custo por KM", f"{custo_km:.2f}")
 
+#calculo para conferir se o consumo e custo estão elevados
+#media_km_l = df_filtrado["km rodado"].sum() / df_filtrado["total de litros"].sum()
+#custo_km = total_gasto / df_filtrado["km rodado"].sum()
 
-st.subheader("Análise por Veículo")
+st.subheader("Análise por veículo")
 
+#calculo por veículo
+st.subheader("Análise por veículo")
+
+#CONVERSÃO CORRETA (ANTES DO GROUPBY)
+df_filtrado = df_filtrado.copy()
+
+df_filtrado[col_km] = df_filtrado[col_km].apply(converter_numero_seguro)
+df_filtrado[col_litros] = df_filtrado[col_litros].apply(converter_numero_seguro)
+df_filtrado[coluna_gasto] = df_filtrado[coluna_gasto].apply(converter_numero_seguro)
+
+# AGRUPAMENTO
 analise_veiculos = (
     df_filtrado.groupby(col_placa)
     .agg({
         col_km: "sum",
         col_litros: "sum",
-        col_gasto: "sum"
+        coluna_gasto: "sum"
     })
     .reset_index()
 )
 
-analise_veiculos["km_l"] = analise_veiculos[col_km] / analise_veiculos[col_litros].replace(0, pd.NA)
-analise_veiculos["custo_km"] = analise_veiculos[col_gasto] / analise_veiculos[col_km].replace(0, pd.NA)
+#CÁLCULOS SEGUROS
+analise_veiculos["km_l"] = analise_veiculos[col_km] / analise_veiculos[col_litros]
+analise_veiculos["custo_km"] = analise_veiculos[coluna_gasto] / analise_veiculos[col_km]
 
-analise_veiculos = analise_veiculos.replace([float("inf"), -float("inf")], 0)
-analise_veiculos = analise_veiculos.fillna(0)
+#TRATAR DIVISÃO POR ZERO
+analise_veiculos.replace([float("inf"), -float("inf")], 0, inplace=True)
+analise_veiculos.fillna(0, inplace=True)
 
+#FILTRAR DADOS INVÁLIDOS
 analise_veiculos = analise_veiculos[
     (analise_veiculos[col_km] > 0) &
     (analise_veiculos[col_litros] > 0)
-].copy()
+]
 
-if analise_veiculos.empty:
-    st.warning("Nenhum veículo encontrado para os filtros selecionados.")
-    st.stop()
-
+#ARREDONDAR
 analise_veiculos["km_l"] = analise_veiculos["km_l"].round(2)
 analise_veiculos["custo_km"] = analise_veiculos["custo_km"].round(2)
-
 
 def definir_status(row):
     if row["km_l"] < 2 or row["custo_km"] > 5:
@@ -499,75 +649,102 @@ def definir_status(row):
     else:
         return "🟢 Normal"
 
-
 analise_veiculos["status"] = analise_veiculos.apply(definir_status, axis=1)
 
+#TABELA FORMATADA
 analise_exibicao = analise_veiculos.copy()
+
+analise_exibicao["km_l"] = analise_exibicao["km_l"].apply(lambda x: f"{x:.2f}")
+analise_exibicao["custo_km"] = analise_exibicao["custo_km"].apply(lambda x: f"R${x:.2f}")
 
 analise_exibicao.rename(columns={
     col_placa: "Veículo",
-    col_km: "KM",
-    col_litros: "Litros",
-    col_gasto: "Gasto",
     "km_l": "Km/L",
-    "custo_km": "R$/Km",
-    "status": "Status"
+    "custo_km": "R$/Km"
 }, inplace=True)
 
-st.dataframe(analise_exibicao, use_container_width=True)
-
+st.dataframe(analise_exibicao)
 
 st.subheader("Status dos Veículos")
-st.dataframe(analise_veiculos, use_container_width=True)
+st.dataframe(analise_veiculos)
 
+#alerta automático
 criticos = analise_veiculos[analise_veiculos["status"] == "🔴 Crítico"]
 
 if not criticos.empty:
     st.error(f"{len(criticos)} veículo(s) em estado CRÍTICO!")
-
-
+    
+#ranking
 ranking = (
-    df_filtrado.groupby(col_placa)[col_gasto]
+    df_filtrado.groupby(col_placa)[coluna_gasto]
     .sum()
-    .sort_values(ascending=True)
+    .sort_values(ascending=False)
     .reset_index()
 )
 
+ranking = ranking.sort_values(by=coluna_gasto, ascending=True)
+
+#ranking formatado com R$
 ranking_formatado = ranking.copy()
-ranking_formatado[col_gasto] = ranking_formatado[col_gasto].apply(lambda x: f"R$ {x:.2f}")
+ranking_formatado[coluna_gasto] = ranking_formatado[coluna_gasto].apply(lambda x: f"R$ {x:.2f}")
 
 st.subheader("Ranking de Gastos Por Veículo")
 st.dataframe(ranking_formatado, use_container_width=True)
 
-
+#top 5 veículos mais caros
 piores = analise_veiculos.sort_values("custo_km", ascending=False).head(5)
 
-melhor = analise_veiculos.sort_values("km_l", ascending=False).iloc[0]
-pior = analise_veiculos.sort_values("km_l").iloc[0]
+#melhores x piores veículos
+if not analise_veiculos.empty:
 
-st.success(f"Melhor: {melhor[col_placa]} ({melhor['km_l']:.2f} KM/L)")
-st.error(f"Pior: {pior[col_placa]} ({pior['km_l']:.2f} KM/L)")
+    melhor = analise_veiculos.sort_values(
+        "km_l",
+        ascending=False
+    ).iloc[0]
 
-st.subheader("Top 5 Veículos Mais Caros")
+    pior = analise_veiculos.sort_values(
+        "km_l"
+    ).iloc[0]
+
+    st.success(
+        f"Melhor: {melhor[col_placa]} ({melhor['km_l']:.2f} KM/L)"
+    )
+
+    st.error(
+        f"Pior: {pior[col_placa]} ({pior['km_l']:.2f} KM/L)"
+    )
+
+else:
+    st.warning("Nenhum veículo encontrado para os filtros selecionados.")
+
+st.subheader ("Top 5 Veículos mais caros")
 st.dataframe(piores, use_container_width=True)
 
+if "data" in df_filtrado.columns:
+    df_filtrado["mes"] = (
+        pd.to_datetime(df_filtrado["data"], errors="coerce")
+        .dt.to_period("M")
+        .astype(str)
+    )
 
-st.subheader("Volume de Combustível por Mês")
+if col_produto is not None and col_produto in df_filtrado.columns:
+    df_filtrado["tipo_combustivel"] = df_filtrado[col_produto].apply(classificar_combustivel)
 
+#volume mensal de combustível
 if (
     col_produto is not None
     and "mes" in df_filtrado.columns
     and "tipo_combustivel" in df_filtrado.columns
 ):
+
     df_volume = df_filtrado.copy()
+    df_volume[col_litros] = df_volume[col_litros].apply(converter_numero_seguro)
 
     volume_mensal = (
         df_volume.groupby(["mes", "tipo_combustivel"])[col_litros]
         .sum()
         .reset_index()
     )
-
-    volume_mensal[col_litros] = volume_mensal[col_litros].round(2)
 
     tabela_volume = (
         volume_mensal.pivot(
@@ -579,6 +756,7 @@ if (
         .round(2)
     )
 
+    st.subheader("Volume de Combustível por Mês")
     st.dataframe(
         tabela_volume.style.format("{:,.2f}"),
         use_container_width=True
@@ -590,75 +768,78 @@ if (
         y=col_litros,
         color="tipo_combustivel",
         barmode="group",
-        text=col_litros,
         title="Volume Mensal por Combustível"
     )
 
-    fig_comb.update_traces(
-        texttemplate="%{text:.2f} L",
-        textposition="outside"
+    st.plotly_chart(
+        fig_comb,
+        use_container_width=True
     )
 
-    st.plotly_chart(fig_comb, use_container_width=True)
-
 else:
-    st.warning("Não foi possível gerar o volume mensal por combustível.")
+    st.warning("Não foi possível gerar o gráfico de volume mensal por combustível.")
 
-
+#UX²
 st.subheader("Análises Visuais")
 
+#gráfico
 fig = px.bar(
     ranking,
-    x=col_placa,
-    y=col_gasto,
-    title="Gasto por Veículo"
+    x="placa",
+    y=coluna_gasto,
+    title="Gasto por veículo",
 )
 
-st.plotly_chart(fig, use_container_width=True)
-
+#gráfico 2(inteligente)
 fig2 = px.scatter(
     analise_veiculos,
     x="km_l",
     y="custo_km",
     color="status",
-    size=col_gasto,
+    size=coluna_gasto,
     hover_data=[col_placa],
     title="Eficiência vs Custo"
 )
 
+
 fig2.update_layout(
     xaxis_title="KM/L",
-    yaxis_title="Custo por KM"
+    yaxis_title= "Custo por KM",
 )
 
 st.plotly_chart(fig2, use_container_width=True)
 
 
+st.plotly_chart(fig, use_container_width=True)
+
+
 st.subheader("Dados Detalhados")
 
+#tabela final formatada
 df_exibicao = df_filtrado.copy()
 
-colunas_monetarias = [
-    col_gasto,
-    "gasto total",
-    "valor diesel",
-    "valor arla",
-    "preço médio",
-    "custo/km"
-]
+colunas_monetarias = ["gasto total", "valor diesel", "valor arla", "preço médio", "custo/km"]
 
 for col in df_exibicao.columns:
     if col in colunas_monetarias:
-        df_exibicao[col] = df_exibicao[col].apply(
-            lambda x: f"R$ {converter_numero_seguro(x):.2f}"
-        )
+        def formatar_moeda(x):
+            try:
+                if pd.isna(x):
+                    return "R$ 0.00"
+                
+                #limpa texto tipo "1.200,50"
+                x = str(x).replace("R$", "").replace(".", "").replace(",", ".").strip()
+
+                return f"R$ {float(x):.2f}"
+            except:
+                return "R$ 0.00"
+            
+        df_exibicao[col] = df_exibicao[col].apply(formatar_moeda)
 
     elif pd.api.types.is_numeric_dtype(df_exibicao[col]):
         df_exibicao[col] = df_exibicao[col].apply(lambda x: f"{float(x):.2f}")
 
-st.dataframe(df_exibicao, use_container_width=True)
-
-
+#Baixar os dados
 from io import BytesIO
 
 st.subheader("Exportar Dados")
@@ -673,3 +854,13 @@ st.download_button(
     "dados_filtrados.xlsx",
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 )
+
+
+#debug final
+#st.write("Coluna usada:", coluna_gasto)
+#st.write("DF TOTAL:", df.shape)
+#st.write("DF FILTRADO:", df_filtrado.shape)
+#st.write(df_filtrado.head(10))
+#st.write(analise_veiculos.sort_values("km_l", ascending=False).head(5))
+#st.write(df_filtro.dtypes)
+#KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK EU NÃO AGUENTO MAIS VER LINHAS DE CÓDIGO NA MINHA FRENTE ALGUÉM ME AJUDA(I CAN'T HANDLE ANYMORE SEEING CODES IN FRONT OF ME SOMEONE PLEASE HELP ME)KKKKKKKK
