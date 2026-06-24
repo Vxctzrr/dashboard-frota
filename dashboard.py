@@ -528,8 +528,8 @@ if intervalo_datas and len(intervalo_datas) == 2:
         (df_filtrado["data"].dt.date <= data_fim)
     ]
 
-if df_filtrado.empy:
-    st.warning("Nenhum registro encontrado para o período seelecionado")
+if df_filtrado.empty:
+    st.warning("Nenhum registro encontrado para o período selecionado")
     st.stop()
 
 with col_f3:
