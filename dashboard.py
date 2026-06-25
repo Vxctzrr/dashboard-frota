@@ -520,6 +520,8 @@ if "data" in df_filtrado.columns:
         dayfirst=True
     )
 
+intervalo_datas = None
+
 with col_f3:
     if "data" in df_filtrado.columns:
 
