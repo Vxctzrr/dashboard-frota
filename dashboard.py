@@ -481,7 +481,12 @@ col_f1, col_f2, col_f3 = st.columns(3)
 
 #garatir que a coluna data está correta
 if "data" in df.columns:
-    df["data"] = pd.to_datetime(df["data"], errors="coerce")
+    df["data"] = pd.to_datetime(
+        df["data"],
+        errors="coerce",
+        format="mixed",
+        dayfirst=True
+    )
 
 with col_f1:
     setor = st.selectbox("Setor", df["origem"].unique())
@@ -513,20 +518,34 @@ df_filtrado["data"] = pd.to_datetime(
 )
 
 with col_f3:
-    if "data" in df_filtrado.columns and not df_filtrado.empty:
+    if "data" in df_filtrado.columns:
 
-        data_min = df_filtrado["data"].min().date()
-        data_max = df_filtrado["data"].max().date()
-        
-        intervalo_datas = st.date_input(
-            "Período",
-            value=(data_min, data_max)
+        df_filtrado["data"] = pd.to_datetime(
+            df_filtrado["data"],
+            errors="coerce",
+            format="mixed",
+            dayfirst=True
         )
+
+        data_min = df_filtrado["data"].min()
+        data_max = df_filtrado["data"].max()
+
+        intevalo_datas = st.date_input(
+            "período",
+            value=(data_min, data_max),
+            key="filtro_data"
+        )
+    
     else:
+        st.info("Esta aba não possui coluna de data.")
         intervalo_datas = None
 
 #aplicar filtro de datas
-if intervalo_datas and len(intervalo_datas) == 2:
+if (
+    intervalo_datas is not None
+    and "data" in df_filtrado.columns
+    and len(intervalo_datas) == 2
+):
     data_inicio, data_fim = intervalo_datas
 
     data_inicio = pd.to_datetime(data_inicio)
@@ -534,7 +553,7 @@ if intervalo_datas and len(intervalo_datas) == 2:
 
     df_filtrado = df_filtrado[
         (df_filtrado["data"] >= data_inicio) &
-        (df_filtrado["data"]<= data_fim)
+        (df_filtrado["data"] < data_fim)
     ]
 
 if df_filtrado.empty:
