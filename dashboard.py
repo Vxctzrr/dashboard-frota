@@ -510,12 +510,15 @@ if veiculo_selecionado != "Todos":
     df_filtrado = df_filtrado[df_filtrado[col_placa] == veiculo_selecionado]
 
 #garantir que o df_filtrado tem data correta
-df_filtrado["data"] = pd.to_datetime(
-    df_filtrado["data"],
-    errors="coerce",
-    format="mixed",
-    dayfirst=True
-)
+if "data" in df_filtrado.columns:
+    df_filtrado = df_filtrado.copy()
+
+    df_filtrado["data"] = pd.to_datetime(
+        df_filtrado["data"],
+        errors="coerce",
+        format="mixed",
+        dayfirst=True
+    )
 
 with col_f3:
     if "data" in df_filtrado.columns:
