@@ -3,6 +3,8 @@
 import pandas as pd
 import streamlit as st
 
+from autenticacao import (tela_login, botao_sair)
+
 from leitura import processar_aba
 from detector import detectar_colunas
 from analises import (
@@ -23,10 +25,13 @@ from banco import(
     carregar_abastecimentos,
     limpar_banco
 )
+from config import NOME_SISTEMA
 
 st.set_page_config(layout="wide")
 
 inicializar_banco()
+tela_login()
+
 
 st.markdown("""
     <style>
@@ -96,8 +101,10 @@ df = preparar_dados(
     col_produto
 )
 
-st.title("Dashboard de Consumo da Frota")
+st.title(NOME_SISTEMA)
+botao_sair()
 st.caption("Análise de abastecimento, eficiência e custos por veículo")
+
 st.divider()
 
 st.header("Filtros")
