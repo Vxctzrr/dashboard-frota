@@ -17,11 +17,11 @@ from graficos import (
     grafico_eficiencia,
     grafico_volume_combustivel
 )
-#from banco import inicializar_banco, salvar_abastecimentos_df, carregar_abastecimentos
+from banco import inicializar_banco, salvar_abastecimentos_df, carregar_abastecimentos
 
 st.set_page_config(layout="wide")
 
-#inicializar_banco()
+inicializar_banco()
 
 st.markdown("""
     <style>
@@ -172,8 +172,6 @@ if st.button("Salvar dados no banco"):
 if st.checkbox("Ver dados salvos no banco"):
     df_banco = carregar_abastecimentos()
     st.dataframe(df_banco, use_container_width=True)
-
-mostrar_metricas(df_filtrado)
 
 st.divider()
 
