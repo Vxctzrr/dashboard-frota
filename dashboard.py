@@ -17,7 +17,12 @@ from graficos import (
     grafico_eficiencia,
     grafico_volume_combustivel
 )
-from banco import inicializar_banco, salvar_abastecimentos_df, carregar_abastecimentos
+from banco import(
+    inicializar_banco,
+    salvar_abastecimentos_df,
+    carregar_abastecimentos,
+    limpar_banco
+)
 
 st.set_page_config(layout="wide")
 
@@ -172,6 +177,11 @@ if st.button("Salvar dados no banco"):
 if st.checkbox("Ver dados salvos no banco"):
     df_banco = carregar_abastecimentos()
     st.dataframe(df_banco, use_container_width=True)
+
+if st.checkbox("Confirmo que desejo pagar todo o banco salvo"):
+    if st.button("Limpar Banco de Dados"):
+        limpar_banco()
+        st.success("Banco limpo com sucesso")
 
 st.divider()
 
