@@ -127,9 +127,8 @@ def limpar_banco():
     cursor = conn.cursor()
 
     cursor.execute("DELETE FROM abastecimentos")
-    cursor.execute("DELETe FROM sqlite_sequence WHERE name='abastecimentos'")
+    cursor.execute("DELETE FROM sqlite_sequence WHERE name='abastecimentos'")
 
     conn.commit()
     conn.close()
 
-    
