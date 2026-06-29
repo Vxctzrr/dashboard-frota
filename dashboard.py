@@ -3,7 +3,7 @@
 import pandas as pd
 import streamlit as st
 
-from autenticacao import (tela_login, botao_sair)
+from autenticacao import tela_login, botao_sair
 
 from leitura import processar_aba
 from detector import detectar_colunas
