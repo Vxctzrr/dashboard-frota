@@ -17,11 +17,11 @@ from graficos import (
     grafico_eficiencia,
     grafico_volume_combustivel
 )
-from banco import inicializar_banco, salvar_abastecimentos_df, carregar_abastecimentos
+#from banco import inicializar_banco, salvar_abastecimentos_df, carregar_abastecimentos
 
 st.set_page_config(layout="wide")
 
-inicializar_banco()
+#inicializar_banco()
 
 st.markdown("""
     <style>
@@ -154,6 +154,7 @@ if df_filtrado.empty:
     st.warning("Nenhum registro encontrado para os filtros selecionados.")
     st.stop()
 
+#salvar dados no banco de dados
 st.subheader("Banco de Dados")
 
 if st.button("Salvar dados no banco"):
