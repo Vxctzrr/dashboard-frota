@@ -37,6 +37,7 @@ with st.sidebar:
 
 inicializar_banco()
 tela_login()
+botao_sair()
 
 st.markdown("""
     <style>
@@ -108,8 +109,6 @@ df = preparar_dados(
 
 st.title(NOME_SISTEMA)
 st.caption("Análise de abastecimento, eficiência e custos por veículo")
-
-botao_sair()
 
 st.divider()
 
@@ -189,7 +188,10 @@ if usuario_admin():
 
         st.success(f"{salvos} novo(s) registro(s) salvo(s) no banco.")
 
-    if st.checkbox("Ver dados salvos no banco"):
+    if st.checkbox(
+        "Ver dados salvos no banco",
+        key="ver_banco"
+    ):
         df_banco = carregar_abastecimentos()
         st.dataframe(df_banco, use_container_width=True)
 
@@ -197,8 +199,14 @@ if usuario_admin():
         df_banco = carregar_abastecimentos()
         st.dataframe(df_banco, use_container_width=True)
 
-    if st.checkbox ("Confirmo que desejo apagar tdo o banco salvo"):
-        if st.button("Limpar Banco de Dados"):
+    if st.checkbox (
+        "Confirmo que desejo apagar todo o banco salvo",
+        key="confirmar_limpar_banco"
+    ):
+        if st.button(
+            "Limpar Banco de Dados",
+        key="btn_limpar_banco"
+        ):
             limpar_banco()
             st.success("Banco limpo com sucesso")
 
