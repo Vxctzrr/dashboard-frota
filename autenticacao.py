@@ -4,9 +4,6 @@ from banco import (
     criar_usuario
 )
 
-cpf = st.text_input("CPF")
-senha = st.text_input("Senha", type="password")
-
 def tela_login():
     if "logado" not in st.session_state:
         st.session_state["logado"] = False
@@ -33,9 +30,9 @@ def tela_login():
         )
 
     if st.button("Entrar"):
-        if verificar_login(cpf, senha):
+        if verificar_login(usuario, senha):
             st.session_state["logado"] = True
-            st.session_state["usuario"] = cpf
+            st.session_state["usuario"] = usuario
             st.rerun()
         else:
             st.error("Usuario ou senha incorretos, favor tentar novamente.")
@@ -54,7 +51,10 @@ def tela_login():
             key="cadastro_senha"
         )
 
-        if st.button("Criar conta"):
+        if st.button(
+            "Criar conta",
+            key="btn_criar_conta"
+        ):
             if novo_usuario.strip() == "" or nova_senha.strip() == "":
                 st.warning("Preencha Usuário e Senha.")
 
