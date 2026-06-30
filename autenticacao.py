@@ -75,10 +75,22 @@ def tela_login():
 
 #cria botão de deslogar
 def botao_sair():
-    st.write(f"Usuário logado: {st.session_state.get('usuario')}")
+    with st.sidebar:
+        st.title("🚛 Fleet Analytics")
+        st.caption("Sistema de Gestão de frotas")
 
-    if st.button ("Sair"):
-        st.session_state["Logado"] = False
-        st.session_state["usuario"] = None
-        st.rerun()
-        
+        st.divider
+
+        if usuario_admin():
+            st.success("👑 Administrador")
+        else:
+            st.info(f"👤 Usuário: {st.session_state.get('usuario')}")
+
+        st.divider()
+
+        if st.button("🚪 Sair", use_container_width=True):
+            st.session_state.clear()
+            st.rerun()
+
+def usuario_admin():
+    return st.session_state.get("usuario") == "0"

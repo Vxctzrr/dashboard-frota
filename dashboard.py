@@ -1,10 +1,12 @@
 #Interface
-
 import pandas as pd
 import streamlit as st
 
-from autenticacao import tela_login, botao_sair
-
+from autenticacao import(
+    tela_login,
+    botao_sair,
+    usuario_admin
+)
 from leitura import processar_aba
 from detector import detectar_colunas
 from analises import (
@@ -28,10 +30,13 @@ from banco import(
 from config import NOME_SISTEMA
 
 st.set_page_config(layout="wide")
+#st.logo("logo.png", size="large") #(quando tiver logo)
+with st.sidebar:
+    st.title("🚛 Fleet Analytics")
+    st.caption("Sistema de Gestão de Frotas")
 
 inicializar_banco()
 tela_login()
-
 
 st.markdown("""
     <style>
@@ -102,8 +107,9 @@ df = preparar_dados(
 )
 
 st.title(NOME_SISTEMA)
-botao_sair()
 st.caption("Análise de abastecimento, eficiência e custos por veículo")
+
+botao_sair()
 
 st.divider()
 
@@ -167,28 +173,34 @@ if df_filtrado.empty:
     st.stop()
 
 #salvar dados no banco de dados
-st.subheader("Banco de Dados")
+if usuario_admin():
+    
+    st.subheader("Banco de dados")
 
-if st.button("Salvar dados no banco"):
-    salvos = salvar_abastecimentos_df(
-        df_filtrado,
-        col_placa,
-        col_km,
-        col_litros,
-        col_gasto,
-        col_produto
-    )
+    if st.button("Salvar dados no banco"):
+        salvos = salvar_abastecimentos_df(
+            df_filtrado,
+            col_placa,
+            col_km,
+            col_litros,
+            col_gasto,
+            col_produto
+        )
 
-    st.success(f"{salvos}novo(s) registro(s) salvo(s) no banco.")
+        st.success(f"{salvos} novo(s) registro(s) salvo(s) no banco.")
 
-if st.checkbox("Ver dados salvos no banco"):
-    df_banco = carregar_abastecimentos()
-    st.dataframe(df_banco, use_container_width=True)
+    if st.checkbox("Ver dados salvos no banco"):
+        df_banco = carregar_abastecimentos()
+        st.dataframe(df_banco, use_container_width=True)
 
-if st.checkbox("Confirmo que desejo pagar todo o banco salvo"):
-    if st.button("Limpar Banco de Dados"):
-        limpar_banco()
-        st.success("Banco limpo com sucesso")
+    if st.checkbox("Ver dados salvos no banco"):
+        df_banco = carregar_abastecimentos()
+        st.dataframe(df_banco, use_container_width=True)
+
+    if st.checkbox ("Confirmo que desejo apagar tdo o banco salvo"):
+        if st.button("Limpar Banco de Dados"):
+            limpar_banco()
+            st.success("Banco limpo com sucesso")
 
 st.divider()
 
