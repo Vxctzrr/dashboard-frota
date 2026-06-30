@@ -19,6 +19,7 @@ def inicializar_banco():
     CREATE TABLE IF NOT EXISTS usuarios(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         usuario TEXT UNIQUE,
+        cpf TEXT UNIQUE,
         senha_hash TEXT,
         criado_em TEXT
     )
@@ -78,27 +79,22 @@ def gerar_usuario():
             return usuario
 
 
-def criar_usuario(usuario, senha):
+def criar_usuario(cpf, senha):
     cpf = str(cpf).replace(".", "").replace("-", "").strip()
 
     conn = conectar()
     cursor = conn.cursor()
-    
-    senha_hash = gerar_hash_senha(senha)
 
+    senha_hash = gerar_hash_senha(senha)
     usuario = gerar_usuario()
 
     try:
         cursor.execute("""
-        INSERT INTO usuarios (
-            usuario, 
-            cpf, 
-            senha_hash, 
-            criado_em
-        )
-        VALUES (?, ?, ?)
+        INSERT INTO usuarios (usuario, cpf, senha_hash, criado_em)
+        VALUES (?, ?, ?, ?)
         """, (
             usuario,
+            cpf,
             senha_hash,
             datetime.now().isoformat()
         ))
