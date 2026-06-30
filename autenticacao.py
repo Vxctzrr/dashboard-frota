@@ -22,8 +22,15 @@ def tela_login():
     aba_login, aba_cadastro = st.tabs(["Entrar", "Criar conta"])
 
     with aba_login:
-        usuario = st.text_input("Usuário")
-        senha = st.text_input("Senha", type="password")
+        usuario = st.text_input(
+            "Usuário",
+            key="login_u"
+        )
+        senha = st.text_input(
+            "Senha",
+            type="password",
+            key="login_senha"
+        )
 
     if st.button("Entrar"):
         if verificar_login(cpf, senha):
@@ -34,10 +41,18 @@ def tela_login():
             st.error("Usuario ou senha incorretos, favor tentar novamente.")
 
 
-#cadastro de usuário
+    #cadastro de usuário
     with aba_cadastro:
-        novo_usuario = st.text_input("CPF")
-        nova_senha = st.text_input ("Crie sua senha", type="password")
+        novo_usuario = st.text_input(
+            "CPF",
+            key="cadastro_cpf"
+        )
+
+        nova_senha = st.text_input (
+            "Crie sua senha",
+            type="password",
+            key="cadastro_senha"
+        )
 
         if st.button("Criar conta"):
             if novo_usuario.strip() == "" or nova_senha.strip() == "":
