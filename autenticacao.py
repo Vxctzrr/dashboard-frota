@@ -23,7 +23,7 @@ def tela_login():
 
     with aba_login:
         usuario = st.text_input("Usuário")
-        senha = st.text_input("Senha", type="passowrd")
+        senha = st.text_input("Senha", type="password")
 
     if st.button("Entrar"):
         if verificar_login(cpf, senha):
