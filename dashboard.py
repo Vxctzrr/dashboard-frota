@@ -31,9 +31,6 @@ from config import NOME_SISTEMA
 
 st.set_page_config(layout="wide")
 #st.logo("logo.png", size="large") #(quando tiver logo)
-with st.sidebar:
-    st.title("🚛 Fleet Analytics")
-    st.caption("Sistema de Gestão de Frotas")
 
 inicializar_banco()
 tela_login()
