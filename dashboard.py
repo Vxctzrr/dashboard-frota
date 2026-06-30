@@ -195,10 +195,6 @@ if usuario_admin():
         df_banco = carregar_abastecimentos()
         st.dataframe(df_banco, use_container_width=True)
 
-    if st.checkbox("Ver dados salvos no banco"):
-        df_banco = carregar_abastecimentos()
-        st.dataframe(df_banco, use_container_width=True)
-
     if st.checkbox (
         "Confirmo que desejo apagar todo o banco salvo",
         key="confirmar_limpar_banco"
