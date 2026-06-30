@@ -10,7 +10,7 @@ from config import DB_NAME, USUARIO_ADMIN, SENHA_ADMIN
 def conectar():
     return sqlite3.connect(DB_NAME)
 
-
+#inicializa o banco de dados...
 def inicializar_banco():
     conn = conectar()
     cursor = conn.cursor()
@@ -52,16 +52,18 @@ def inicializar_banco():
     conn.commit()
     conn.close()
 
-
 #Login
 def gerar_hash(valores):
     texto = "|".join(str(x) for x in valores)
     return hashlib.md5(texto.encode("utf-8")).hexdigest()
 
 
+#criar a senha
 def gerar_hash_senha(senha):
     return hashlib.sha256(str(senha).encode("utf-8")).hexdigest()
 
+
+#cria usuario
 def gerar_usuario():
     conn = conectar()
     cursor = conn.cursor()
@@ -79,6 +81,7 @@ def gerar_usuario():
             return usuario
 
 
+#criar usuário...
 def criar_usuario(cpf, senha):
     cpf = str(cpf).replace(".", "").replace("-", "").strip()
 
@@ -109,6 +112,7 @@ def criar_usuario(cpf, senha):
         conn.close()
 
 
+#verificar login...
 def verificar_login(usuario, senha):
     usuario = str(usuario).strip().replace(".", "").replace("-", "")
 
@@ -204,6 +208,7 @@ def salvar_abastecimentos_df(
     return salvos
 
 
+#carregar abastecimentos...
 def carregar_abastecimentos():
     conn = conectar()
 
@@ -217,6 +222,7 @@ def carregar_abastecimentos():
     return df
 
 
+#limpar banco de dados...
 def limpar_banco():
     conn = conectar()
     cursor = conn.cursor()
@@ -226,3 +232,68 @@ def limpar_banco():
 
     conn.commit()
     conn.close()
+
+#mostrar usuarios cadastrados
+def listar_usuarios():
+    conn = conectar()
+
+    df = pd.read_sql_query(
+        "SELECT id, usuario, cpf, criado_em FROM usuarios ORDER BY criado_em DESC",
+        conn
+    )
+
+    conn.close()
+    return df
+
+
+#excluir usuario
+def excluir_usuario(usuario):
+    conn = conectar()
+    cursor = conn.cursor
+
+    cursor.execute(
+        "DELETE FROM usuarios WHERE usuario = ?",
+        (str(usuario),)
+    )
+
+    conn.commit()
+    conn.close()
+
+#registrar usuario
+def registrar_log(usuario, acao):
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        usuario TEXT,
+        acao TEXT,
+        criado_em TEXT
+    )
+    """)
+
+    cursor.execute("""
+    INSERT INTO logs (usuario, acao, criado_em)
+    VALUES(?, ?, ?)    
+    """, (
+        str(usuario),
+        str(acao),
+        datetime.now().isoformat()
+    ))
+
+    conn.commit()
+    conn.close()
+
+#carregar logs
+def carregar_logs():
+    conn = conectar()
+
+
+    df = pd.read_sql_query(
+        "SELECT * FROM logs ORDER BY criado_em DESC",
+        conn
+    )
+
+    conn.close()
+    return df

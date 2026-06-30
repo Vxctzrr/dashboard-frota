@@ -1,5 +1,5 @@
 import streamlit as st
-from banco import verificar_login, criar_usuario
+from banco import verificar_login, criar_usuario, registrar_log
 
 
 def usuario_admin():
@@ -29,9 +29,13 @@ def tela_login():
             if verificar_login(usuario, senha):
                 st.session_state["logado"] = True
                 st.session_state["usuario"] = usuario
+
+                registrar_log(usuario, "Login realizado")
+
                 st.rerun()
             else:
-                st.error("Usuário ou senha incorretos, favor tentar novamente.")
+                registrar_log(usuario, "Tentativa de login inválida")
+                st.error("Usuário ou senha incorretos.")
     
     #cadastrar
     with aba_cadastro:
@@ -45,6 +49,7 @@ def tela_login():
                 codigo = criar_usuario(cpf, nova_senha)
 
                 if codigo:
+                    registrar_log(codigo, "Usuário criado")
                     st.success(f"Conta criada com sucesso! Seu usuário é: {codigo}")
                 else:
                     st.error("Este CPF já está cadastrado.")
@@ -67,5 +72,9 @@ def botao_sair():
         st.divider()
 
         if st.button("🚪 Sair", use_container_width=True, key="btn_sair"):
+            registrar_log(
+                st.session_state.get("usuario"),
+                "Logout realizado"
+            )
             st.session_state.clear()
             st.rerun()

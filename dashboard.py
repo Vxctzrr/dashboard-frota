@@ -25,7 +25,11 @@ from banco import(
     inicializar_banco,
     salvar_abastecimentos_df,
     carregar_abastecimentos,
-    limpar_banco
+    limpar_banco,
+    listar_usuarios,
+    excluir_usuario,
+    carregar_logs,
+    registrar_log
 )
 from config import NOME_SISTEMA
 
@@ -74,6 +78,19 @@ if arquivos:
 
         if df_temp is not None:
             dfs.append(df_temp)
+
+    if arquivos:
+        assinatura_upload = "|".join(
+            sorted([f"{arquivo.name}-{arquivo.size}" for arquivo in arquivos])
+        )
+
+        if st.session_state.get("ultimo_upload_logado") != assinatura_upload:
+            registrar_log(
+                st.session_state.get("usuario"),
+                f"Carregou {len(arquivos)} arquivos(s): {', '.join([a.name for a in arquivos])}"
+            )
+
+            st.session_state["ultimo_upload_logado"] = assinatura_upload
 
 if not dfs:
     st.error("Nenhum arquivo válido foi enviado.")
@@ -168,6 +185,54 @@ if df_filtrado.empty:
     st.warning("Nenhum registro encontrado para os filtros selecionados.")
     st.stop()
 
+#Área admin
+if usuario_admin():
+    st.subheader("Painel Administrativo")
+
+    aba_usuarios, aba_logs, aba_config = st.tabos(
+        ["Usuários", "Logs", "Configurações"]
+    )
+
+    with aba_usuarios:
+        st.write ("### Usuários cadastrados")
+
+        df_usuarios = listar_usuarios()
+        st.dataframe(df_usuarios, use_container_width=True)
+
+        usuario_excluir = st.text_input(
+            "Digite o código do usuário para excluir",
+            key="usuario_excluir"
+        )
+
+        if st.button("Excluir usuário", key="btn_excluir_usuario"):
+            if usuario_excluir == "0":
+                st.error("Você não pode excluir o administrador.")
+        elif usuario_excluir.strip() == "":
+            st.warning("Digite um usuário")
+        else:
+            excluir_usuario(usuario_excluir)
+            registrar_log(
+                st.session_state.get("usuario"),
+                f"Excluiu usuário {usuario_excluir}"
+            )
+            st.success("Usuário excluido com sucesso.")
+
+            registrar_log(
+                st.session_state.get("usuario"),
+                f"Excluiu usuário {usuário_excluir}"
+            )
+            st.rerun()
+
+    with aba_logs:
+        st.write("### Logs do sistema")
+
+        df_logs = carregar_logs()
+        st.dataframe(df_logs, use_container_width=True)
+
+    with aba_config:
+        st.write("### Configurações")
+        st.info("Área reservada para futuras configurações do sistema.")
+
 #salvar dados no banco de dados
 if usuario_admin():
     
@@ -183,8 +248,13 @@ if usuario_admin():
             col_produto
         )
 
-        st.success(f"{salvos} novo(s) registro(s) salvo(s) no banco.")
+        registrar_log(
+            st.session_state.get("usuario"),
+            f"Salvou {salvos} regostros no banco"
+        )
 
+
+    #apagar banco de dados
     if st.checkbox(
         "Ver dados salvos no banco",
         key="ver_banco"
@@ -201,6 +271,12 @@ if usuario_admin():
         key="btn_limpar_banco"
         ):
             limpar_banco()
+            
+            registrar_log(
+                st.session_state.get("usuario"),
+                "Limpou banco de dados"
+            )
+            
             st.success("Banco limpo com sucesso")
 
 st.divider()
