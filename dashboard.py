@@ -189,7 +189,7 @@ if df_filtrado.empty:
 if usuario_admin():
     st.subheader("Painel Administrativo")
 
-    aba_usuarios, aba_logs, aba_config = st.tabos(
+    aba_usuarios, aba_logs, aba_config = st.tabs(
         ["Usuários", "Logs", "Configurações"]
     )
 
@@ -207,21 +207,18 @@ if usuario_admin():
         if st.button("Excluir usuário", key="btn_excluir_usuario"):
             if usuario_excluir == "0":
                 st.error("Você não pode excluir o administrador.")
-        elif usuario_excluir.strip() == "":
-            st.warning("Digite um usuário")
-        else:
-            excluir_usuario(usuario_excluir)
-            registrar_log(
-                st.session_state.get("usuario"),
-                f"Excluiu usuário {usuario_excluir}"
-            )
-            st.success("Usuário excluido com sucesso.")
+            elif usuario_excluir.strip() == "":
+                st.warning("Digite um usuário.")
+            else:
+                excluir_usuario(usuario_excluir)
 
-            registrar_log(
-                st.session_state.get("usuario"),
-                f"Excluiu usuário {usuário_excluir}"
-            )
-            st.rerun()
+                registrar_log(
+                    st.session_state.get("usuario"),
+                    f"Excluiu usuário {usuario_excluir}"
+                )
+
+                st.success("Usuário excluído com sucesso.")
+                st.rerun()
 
     with aba_logs:
         st.write("### Logs do sistema")
@@ -250,7 +247,7 @@ if usuario_admin():
 
         registrar_log(
             st.session_state.get("usuario"),
-            f"Salvou {salvos} regostros no banco"
+            f"Salvou {salvos} registros no banco"
         )
 
 

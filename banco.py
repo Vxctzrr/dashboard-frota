@@ -40,15 +40,6 @@ def inicializar_banco():
     )
     """)
 
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS usuarios (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        usuario TEXT UNIQUE,
-        senha_hash TEXT,
-        criado_em TEXT
-    )
-    """)
-
     conn.commit()
     conn.close()
 
@@ -249,7 +240,7 @@ def listar_usuarios():
 #excluir usuario
 def excluir_usuario(usuario):
     conn = conectar()
-    cursor = conn.cursor
+    cursor = conn.cursor()
 
     cursor.execute(
         "DELETE FROM usuarios WHERE usuario = ?",
@@ -259,7 +250,7 @@ def excluir_usuario(usuario):
     conn.commit()
     conn.close()
 
-#registrar usuario
+#registrar log
 def registrar_log(usuario, acao):
     conn = conectar()
     cursor = conn.cursor()
