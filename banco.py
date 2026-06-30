@@ -67,7 +67,7 @@ def gerar_usuario():
     cursor = conn.cursor()
 
     while True:
-        usuario = str(random.randit(1000, 9999))
+        usuario = str(random.randint(1000, 9999))
 
         cursor.execute(
             "SELECT 1 FROM usuarios WHERE usuario = ?",
